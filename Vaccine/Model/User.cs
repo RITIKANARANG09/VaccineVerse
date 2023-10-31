@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
-namespace Project
+namespace Vaccine.Model
 {
     public enum Role
     {
@@ -12,11 +8,14 @@ namespace Project
         Admin,
         Patient
     }
-    public  class User
+    public class User
     {
+
+
         public string Username { get; set; }
         public string Password { get; set; }
         public string phoneNo { get; set; }
         public Role role;
+
     }
 }

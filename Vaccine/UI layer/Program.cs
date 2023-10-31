@@ -1,11 +1,5 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.ComponentModel;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Channels;
-using Vaccine.UI_layer;
+﻿
+using Vaccine.Model;
 
 namespace Project
 {
@@ -36,42 +30,36 @@ namespace Project
                 Console.WriteLine();
             }
         }
-        enum StartFunction
-        {
-            Login = 1,
-            Signup,
-            ViewVaccines,
-            Exit
-        }
+        
         public static void Main(String[]args)
-        { 
-            MainFunction();
+        {
+            try
+            {
+                MainFunction();
+            }
+            catch(Exception ex) {
+            
+            }
         }
         public static void MainFunction()
         {
             while (true)
             {
-                mainOptions:  Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine("Choose a number:");
-                Console.WriteLine("1. Login");
-                Console.WriteLine("2. Signup (For Patients) ");
-                Console.WriteLine("3. View Vaccines");
-                Console.WriteLine("4. Exit");
-                int choice;
+            mainOptions: Choose.MainFunctionChoose();
+                StartFunction choice;
                 try
                 {
-                     choice = Convert.ToInt32(Console.ReadLine());
+                     choice = (StartFunction)Convert.ToInt32(Console.ReadLine());
                 }
                 catch
                 {
-                    Errors.OnlyNumeric();
+                    ExceptionController.OnlyNumeric();
                     goto mainOptions;
                 }
-                
                 Console.ResetColor();
                 switch (choice)
                 {
-                    case (int)StartFunction.Login:
+                    case StartFunction.Login:
 
                         List<string> data = LoginUI.UserLogin();
                         if (data[0] == Role.Admin.ToString())
@@ -95,14 +83,14 @@ namespace Project
                         }
                         break;
 
-                    case (int)StartFunction.Signup:
+                    case StartFunction.Signup:
                         PatientSignUp();
                         break;
 
-                    case (int)StartFunction.ViewVaccines:
+                    case StartFunction.ViewVaccines:
                         VaccineUI.ViewVaccine();
                         continue;
-                    case (int)StartFunction.Exit:
+                    case StartFunction.Exit:
                         Environment.Exit(0);
                         break;
                     default:
@@ -117,12 +105,7 @@ namespace Project
             while (true)
             {
                 string a = VerifyPhone();
-                bool phoneVerify = AuthManager<User>.AuthMInstance.CheckPhoneNoExists(a);
-                if (phoneVerify == true)
-                {
-                    Console.WriteLine("Phone Number already exists !, you can directly log in");
-                    continue;
-                }
+                if (AuthManager<User>.AuthMInstance.CheckPhoneNoExists(a)==true) continue;
                 RegisterUI.UserRegister(Role.Patient.ToString(),a);
 
                 Helpers();
@@ -137,16 +120,7 @@ namespace Project
                 Console.WriteLine("Enter phone number in the format (+91**********) : ");
                 pn = Console.ReadLine();
                 var ans = false;
-
-                ans = AuthManager<Patient>.AuthMInstance.PhoneNoVerify(pn);
-
-                if (ans == false)
-                {
-                    Console.WriteLine("Invalid credentials");
-                    //LoginUI.UserLogin();
-                    continue;
-                }
-
+                if (RegexValid.PhoneNoVerify(pn) == false) continue;
                 break;
             }
             return pn;
@@ -158,7 +132,7 @@ namespace Project
             if (AuthManager<User>.AuthMInstance.VerifyVaccineCenter(vaccineCenter) == true)
                 LocalAdminUI.choose(vaccineCenter);
             else
-            {       Console.WriteLine("Invalid Details ! ");
+            {       
                 MainFunction();
                
         }
@@ -168,9 +142,19 @@ namespace Project
         {
             while (true) {
                 Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine("Press 1 : login ");
+                helperOptions:  Console.WriteLine("Press 1 : login ");
                 Console.WriteLine("Press 2 : Exit");
-                int input = Convert.ToInt32(Console.ReadLine());
+                int input;
+                try
+                {
+                    input = Convert.ToInt32(Console.ReadLine());
+                }
+                catch
+                {
+                    ExceptionController.OnlyNumeric();
+                    goto helperOptions;
+                }
+               
                 Console.ResetColor();
                 switch (input)
                 {

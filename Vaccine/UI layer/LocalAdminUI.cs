@@ -1,13 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Project
 {   enum LocalAdminChoose
     {
@@ -24,23 +15,26 @@ namespace Project
             Console.WriteLine("------------------------- Logged in as Admin ---------------------------------");
             while (true)
             {
-                Console.ForegroundColor=ConsoleColor.DarkGray;
-                Console.WriteLine("Choose anyone number : ");
-                Console.WriteLine("1 View available Vaccines");
-                Console.WriteLine("2 Increment Vaccines ");
-                Console.WriteLine("3 Decrement Vaccines ");
-                Console.WriteLine("4 Record of patients ");
-                Console.WriteLine("5 Add vaccine to center ");
-                
-                int ip = Convert.ToInt32(Console.ReadLine());
-                Console.ResetColor();
+                LocalAdminUIOptions:  Choose.LocalAdminUIChoose();
+ 
+                int ip;
+                try
+                {
+                    ip = Convert.ToInt32(Console.ReadLine());
+                    Console.ResetColor();
+                }
+                catch
+                {
+                    ExceptionController.OnlyNumeric();
+                    goto LocalAdminUIOptions;
+                }
                 switch (ip)
                 {
                     case (int)LocalAdminChoose.ViewAvailableVaccines:
                         ViewVaccine(vaccineCenter);
                         break;
                     case (int)LocalAdminChoose.IncrementVaccines:
-                        IncreaseVaccineCount(vaccineCenter);
+                        VaccineUI.IncreaseVaccineCount(vaccineCenter);
                         break;
                     case (int)LocalAdminChoose.DecrementVaccines:
                         DecreaseVaccineCount(vaccineCenter);
@@ -57,8 +51,8 @@ namespace Project
                 }
                 Console.WriteLine("1 for main menu");
                 Console.WriteLine("2 for exit");
-                var input= Console.ReadLine();
-                if (input == "2")
+                var inputVal= Console.ReadLine();
+                if (inputVal == "2")
                     Environment.Exit(0);
                 else
                     continue;
@@ -67,35 +61,36 @@ namespace Project
 
         }
        
-      public static void IncreaseVaccineCount(string vc)
-        {
+      
             
-            Console.WriteLine("which vaccine you want to increase from available vaccines below ");
-            List<VaccineAvailable> VaccineNameList = VaccineCenter.ViewVaccinesLocally(vc);
-            string result = string.Join(", ", VaccineNameList.Select(v => v.VName));
-            Console.WriteLine(result);
-            string vaccineName = Console.ReadLine();
-            Console.Write($"How many doses of {vaccineName} do you want to increase: ");
-            int ivcount = Convert.ToInt32(Console.ReadLine());
-            string input = VaccineCenter.incrementVaccines(ivcount, vaccineName, vc);
-            Console.WriteLine(input);
             
-        }
+        
         public static void DecreaseVaccineCount(string vc)
         {
-            Console.WriteLine("Which vaccine do you want to decrease from available vaccines below:");
-            List<VaccineAvailable> VaccineNameList = VaccineCenter.ViewVaccinesLocally(vc);
+            Console.WriteLine(Message.inputDecrementVaccineName);
+            List<VaccineAvailable> VaccineNameList = VaccineController.ViewVaccinesLocally(vc);
             string result = string.Join(", ", VaccineNameList.Select(v => v.VName));
             Console.WriteLine(result);
             string vaccineName = Console.ReadLine();
-            Console.Write($"How many doses of {vaccineName} do you want to decrease: ");
-            int ivcount = Convert.ToInt32(Console.ReadLine());
-            string input = VaccineCenter.decrementVaccines(ivcount, vaccineName, vc);
-            Console.WriteLine(input);
+            
+        decDosesOptions: Console.Write($"How many doses of {vaccineName} do you want to decrease: ");
+            int ivcount;
+            try
+            {
+                ivcount = Convert.ToInt32(Console.ReadLine());
+                string input = VaccineController.decrementVaccines(ivcount, vaccineName, vc);
+                Console.WriteLine(input);
+            }
+            catch
+            {
+                ExceptionController.OnlyNumeric();
+                goto decDosesOptions;
+            }
+           
         }
         public static void ViewVaccine(string vc)
         {
-            List<VaccineAvailable> vaccine = VaccineCenter.ViewVaccinesLocally(vc);
+            List<VaccineAvailable> vaccine = VaccineController.ViewVaccinesLocally(vc);
             var result = vaccine.Select(v => $"{v.VName} : {v.vcount}");
             Console.WriteLine(string.Join(Environment.NewLine, result));
         }
@@ -103,7 +98,7 @@ namespace Project
         public static void PatientRecord(string vc)
         {
             Console.WriteLine("Patient Records are : ");
-            List<Appointment> patientDetails=VaccineCenter.RecordOfPatientsOfVC(vc);
+            List<Appointment> patientDetails=PatientController.RecordOfPatientsOfVC(vc);
             var formattedAppointments = patientDetails.Select(pat => 
             $"Phone No: {pat.patientPhoneNo}, Vaccine Name: {pat.VName}, Date: {pat.dt}");
             string result = string.Join(Environment.NewLine, formattedAppointments);
@@ -115,23 +110,49 @@ namespace Project
             {
                 Console.Write("Which vaccine you want to add from below available vaccines : ");
                 VaccineUI.ViewVaccine();
+            dosesCountOptions: Console.WriteLine("how much doses you want to add initially ? ");
                 var addVaccines = Console.ReadLine();
-                Console.WriteLine("how much doses you want to add initially ? ");
-                int idoses = Convert.ToInt32(Console.ReadLine());
-                Console.Write("Enter min age for vaccine : ");
-                int minAge = Convert.ToInt32(Console.ReadLine());
-                Console.Write("Enter min age for vaccine : ");
-                int maxAge = Convert.ToInt32(Console.ReadLine());
-                var input = LocalAdmin.VaccineAddInCenter(vc, addVaccines, idoses,minAge,maxAge);
-                if (input == "Vaccine already present in the center")
-
+                int idoses;
+                try
                 {
-                    Console.WriteLine(input);
+                    idoses = Convert.ToInt32(Console.ReadLine());
+                }
+                catch
+                {
+                    ExceptionController.OnlyNumeric();
+                    goto dosesCountOptions;
+                }
+            //
+            minAgeOptions: Console.Write("Enter min age for vaccine : ");
+                int minAge;
+                try
+                {
+                    minAge = Convert.ToInt32(Console.ReadLine());
+                }
+                catch
+                {
+                    ExceptionController.OnlyNumeric();
+                    goto minAgeOptions;
+                }
+            //
+            maxAgeOptions: Console.Write("Enter max age for vaccine : ");
+                int maxAge;
+                try
+                {
+                    maxAge = Convert.ToInt32(Console.ReadLine());
+                }
+                catch
+                {
+                    ExceptionController.OnlyNumeric();
+                    goto maxAgeOptions;
+                }
 
-                        continue; }
+                var input = VaccineController.VaccineAddInCenter(vc, addVaccines, idoses, minAge, maxAge);
+                if (input == null)
+                { continue; }
                 else { Console.WriteLine(input); break; }
             }
-            
+
         }
 
     }

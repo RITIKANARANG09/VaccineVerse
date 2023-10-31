@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+using Vaccine.Model;
 
 namespace Project
 {
@@ -24,36 +20,35 @@ namespace Project
 
             while (true)
             {
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine("Choose any one : ");
-                Console.WriteLine("1. Add admin");
-                Console.WriteLine("2. Add vaccine");
-                Console.WriteLine("3. View vaccines");
-                Console.WriteLine("4. View Admins");
-                Console.WriteLine("5. Exit");
-                var input = Convert.ToInt32(Console.ReadLine());
+             Choose.GlobalAdminUIChoose();
+                GlobalAdminChoose input;
+
+             input = (GlobalAdminChoose)Validation.IntValidate();
                 Console.ResetColor();
                 
                 switch (input)
                 {
-                    case (int)GlobalAdminChoose.AddAdmin:
+                    case GlobalAdminChoose.AddAdmin:
                         addAdminChecker();
                         continue ;
-                    case (int)GlobalAdminChoose.AddVaccine:
+                    case GlobalAdminChoose.AddVaccine:
                         VaccineUI.AddVaccineByGA();
                         helper();
                         continue;
-                    case (int)GlobalAdminChoose.ViewVaccines:
+                    case GlobalAdminChoose.ViewVaccines:
                         VaccineUI.ViewVaccine();
                         helper();
                         continue;
-                    case (int)GlobalAdminChoose.ViewAdmin:
+                    case GlobalAdminChoose.ViewAdmin:
                         viewAdmins();
                         helper();
                         continue;
-                    case (int)GlobalAdminChoose.Exit:
+                    case GlobalAdminChoose.Exit:
                         Environment.Exit(0);
                         break;
+                    default:
+                        ExceptionController.NotValid();
+                        continue;
                 }
                 break;
             }
@@ -61,24 +56,18 @@ namespace Project
         public static void addAdminChecker()
         {
             var input = "";
-            while (true) { 
-            Console.Write("Enter phone Number of Admin : ");
-            input = Console.ReadLine();
-                Console.Write("\nEnter vaccination Center : ");
-                var vaccineCenterInput = Console.ReadLine();
-                VaccineCenter: try
+            while (true) {
+                Console.WriteLine(Message.inputPhoneNo);
+                input = Console.ReadLine();
+                if (AuthManager<User>.AuthMInstance.CheckPhoneNoExists(input!) || AuthManager<User>.AuthMInstance.VerifyPhone(input) == "Invalid Credentials")
                 {
-                    bool isPresent = AuthManager<User>.AuthMInstance.VaccineCenterAlreadyPresent(vaccineCenterInput);
-                    if (isPresent)
-                    {
-                        Console.WriteLine("Vaccine Center already present !");
-                        goto VaccineCenter;
-                        }
+                    Console.WriteLine("Phone number either exists or is not correct");
+                    continue;
                 }
-                catch (Exception e) { Console.WriteLine("Error occured, please try again"); }
-                if (AuthManager<User>.AuthMInstance.CheckPhoneNoExists(input) || AuthManager<User>.AuthMInstance.VerifyPhone(input) == "Invalid Credentials")
-            { Console.WriteLine("Phone number either exists or is not correct");
-                continue; }
+            VerifyVaccineCenterOption: Console.WriteLine(Message.inputVaccinationCenter);
+                var vaccineCenterInput = Console.ReadLine();
+                    bool isPresent = AuthManager<User>.AuthMInstance.VaccineCenterAlreadyPresent(vaccineCenterInput);
+                if(isPresent==true) { Console.WriteLine("Vaccine center already present !"); goto VerifyVaccineCenterOption; }
                 break;
             }
 
@@ -89,6 +78,10 @@ namespace Project
         {
             var vaccineCenterDetails=AuthManager<User>.AuthMInstance.ViewAdmins();
             var input=vaccineCenterDetails.Distinct().ToList();
+            if(input==null)
+            {
+                Choose.GlobalAdminUIChoose();
+            }
            Console.ForegroundColor = ConsoleColor.Gray;
             Console.Write("LAdmins     VaccineCenter\n");
             Console.ResetColor();
@@ -97,28 +90,25 @@ namespace Project
                 Console.WriteLine(VaccineCenter.LaName+ " : "+VaccineCenter.VcName);
             }
         }
-        private enum Helper
-        {
-            Choose=1
-        }
+        
         public static void helper()
         {
-          chooseH:  Console.ForegroundColor= ConsoleColor.Blue;
-            Console.WriteLine("Choose 1 to go back");
-            Console.WriteLine("2 for exit ");
-            try
-            {
-                int input = Convert.ToInt32(Console.ReadLine());
+
+            HelperOption:  Console.ForegroundColor = ConsoleColor.Blue;
+            Choose.HelperChoose();
+            Helper input = (Helper)Validation.IntValidate();
                 Console.ResetColor();
-                if (input == (int)Helper.Choose) choose();
-                else
+                if (input == Helper.Choose) 
+                choose();
+                else if(input==Helper.Exit)
                     Environment.Exit(0);
-            }
-            catch
+                else
             {
-                Console.WriteLine("Invalid input");
-                goto chooseH;
+                ExceptionController.NotValid();
+                goto HelperOption;
             }
+
+           
         }
     }
 }

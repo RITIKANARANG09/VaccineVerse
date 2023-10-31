@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+using Vaccine.Model;
 
 namespace Project
 {
@@ -17,8 +13,8 @@ namespace Project
                 Console.WriteLine("Enter username : ");
                 var username = Console.ReadLine();
                 Console.WriteLine("Enter password : ");
-                var password = Console.ReadLine();
-                Console.WriteLine("Enter phone number : ");
+                var password = HideP.HidePassword();
+                Console.WriteLine("\nEnter phone number : ");
                 var phnNo= Console.ReadLine();
                 string role = AuthManager<User>.AuthMInstance.Login(username, password, phnNo);
                 if (String.IsNullOrWhiteSpace(username) || String.IsNullOrWhiteSpace(password) || String.IsNullOrWhiteSpace(phnNo) || role == "Wrong input")
@@ -26,6 +22,8 @@ namespace Project
                     Console.WriteLine("Invalid credentials");
                     continue;
                 }
+                else if(role==null)
+                 continue;
                 LoginCredentials.Add(role); LoginCredentials.Add(phnNo);
                 return LoginCredentials;
             }

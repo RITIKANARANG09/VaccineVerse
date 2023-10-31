@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Vaccine.Model;
 
 namespace Project
 {
@@ -14,7 +10,7 @@ namespace Project
             {
                 try
                 {
-                    Console.WriteLine("Enter Username:");
+                    Console.WriteLine(Message.inputUsername);
                     var username = Console.ReadLine();
 
                     Console.WriteLine("Enter Password:");

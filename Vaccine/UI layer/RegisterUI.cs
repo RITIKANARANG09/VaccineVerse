@@ -4,29 +4,24 @@ namespace Project
 {
     public class RegisterUI
     {
-        public static void UserRegister(string role,string a,string vcname=null)
+        public static void UserRegister(string role,string phoneNo,string vcname=null)
         {
             while (true)
             {
-                try
-                {
                     Console.WriteLine(Message.inputUsername);
                     var username = Console.ReadLine();
-
-                    Console.WriteLine("Enter Password:");
-                    var password = Console.ReadLine();
+                var isUsernameExists = AuthManager<User>.AuthMInstance.CheckUserExists(username);
+                if(isUsernameExists) { Console.WriteLine(Message.printUserExitsAlready);continue; }
+                Console.WriteLine(Message.inputPassword);
+                    var password = HideP.HidePassword();
                     if (role == Role.Admin.ToString())
                     {
                        
-                        AuthManager<User>.AuthMInstance.Register(username, a, password, Role.Admin, vcname);
+                        AuthManager<User>.AuthMInstance.Register(username, phoneNo, password, Role.Admin, vcname);
                     }
                     else { 
-                        AuthManager<User>.AuthMInstance.Register(username, a, password, Role.Patient);
-                }
-                    
-                }
-                catch { 
-                
+                        AuthManager<User>.AuthMInstance.Register(username, phoneNo, password, Role.Patient);
+                    break;
                 }
                 break;
             }

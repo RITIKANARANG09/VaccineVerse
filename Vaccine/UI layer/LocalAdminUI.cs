@@ -1,159 +1,172 @@
 ﻿
+using Vaccine.Model;
+
 namespace Project
-{   enum LocalAdminChoose
-    {
-        ViewAvailableVaccines=1,
-        IncrementVaccines,
-        DecrementVaccines,
-        PatientRecord,
-        AddVaccineToCenter
-    }
+{
     public  class LocalAdminUI 
     {
-        public static void choose(string vaccineCenter)
+        VaccineController vaccineControllerObj = new VaccineController();
+        PatientController patientControllerObj = new PatientController();
+        AppointmentController appointmentControllerObj = new AppointmentController();
+        GlobalAdminUI globalAdminObj = new GlobalAdminUI();
+        public void choose(VaccineCenter vaccineCenterObj, Admin admin)
         {
-            Console.WriteLine("------------------------- Logged in as Admin ---------------------------------");
+           
             while (true)
             {
-                LocalAdminUIOptions:  Choose.LocalAdminUIChoose();
- 
-                int ip;
-                try
-                {
-                    ip = Convert.ToInt32(Console.ReadLine());
-                    Console.ResetColor();
-                }
-                catch
-                {
-                    ExceptionController.OnlyNumeric();
-                    goto LocalAdminUIOptions;
-                }
+                Choose.LocalAdminUIChoose();
+                LocalAdminChoose ip=(LocalAdminChoose)Validation.IntValidate();
+                Console.ResetColor();
+                
                 switch (ip)
                 {
-                    case (int)LocalAdminChoose.ViewAvailableVaccines:
-                        ViewVaccine(vaccineCenter);
+                    case LocalAdminChoose.ViewAvailableVaccines:
+                        LocallyViewVaccine(vaccineCenterObj);
                         break;
-                    case (int)LocalAdminChoose.IncrementVaccines:
-                        VaccineUI.IncreaseVaccineCount(vaccineCenter);
+                    
+                    case LocalAdminChoose.IncrementVaccines:
+                        IncreaseVaccineCount(vaccineCenterObj);    
                         break;
-                    case (int)LocalAdminChoose.DecrementVaccines:
-                        DecreaseVaccineCount(vaccineCenter);
+                    
+                    case LocalAdminChoose.DecrementVaccines:
+                        DecreaseVaccineCount(vaccineCenterObj);
                         break;
-                    case (int)LocalAdminChoose.PatientRecord:
-                        PatientRecord(vaccineCenter);
+                    
+                    case LocalAdminChoose.Appointments:    
+                        ViewAppointments(admin,vaccineCenterObj);
                         break;
-                    case (int)LocalAdminChoose.AddVaccineToCenter:
-                        AddVaccineToCenter(vaccineCenter);
+                    
+                    case LocalAdminChoose.AddVaccineToCenter:
+                        AddVaccineToCenter(vaccineCenterObj);
                         break;
+                    
+                    case LocalAdminChoose.ViewPatientPastRecord:
+                        ViewPastRecord(admin,vaccineCenterObj);
+                        break;
+                    
                     default:
-                        Console.WriteLine("Invalid choice!");
+                        Console.WriteLine(Message.printInvalidChoice);
                         continue;
                 }
-                Console.WriteLine("1 for main menu");
-                Console.WriteLine("2 for exit");
-                var inputVal= Console.ReadLine();
-                if (inputVal == "2")
-                    Environment.Exit(0);
-                else
-                    continue;
-                break;
+                Choose.HelperChoose();
+                var inputVal= (HelperChoose)Validation.IntValidate();
+
+                switch (inputVal)
+                {
+                    case HelperChoose.Back:
+                        continue;
+                   
+                    case HelperChoose.Exit:
+                        Environment.Exit(0);
+                        break;
+                    
+                    default:
+                        Console.WriteLine(Message.printInvalidChoice);
+                            continue;
+                }
             }
 
         }
-       
-      
-            
-            
-        
-        public static void DecreaseVaccineCount(string vc)
+        public void AdminLogin(Admin admin)
         {
-            Console.WriteLine(Message.inputDecrementVaccineName);
-            List<VaccineAvailable> VaccineNameList = VaccineController.ViewVaccinesLocally(vc);
-            string result = string.Join(", ", VaccineNameList.Select(v => v.VName));
-            Console.WriteLine(result);
+           Label: Console.WriteLine(Message.inputVaccinationCenter);
+            string vaccineCenter = Console.ReadLine();
+            
+            VaccineCenter vaccineCenterObj = AuthManager<User>.AuthMInstance.VerifyVaccineCenter(admin,vaccineCenter);
+            if (vaccineCenterObj != null)
+            { choose(vaccineCenterObj, admin); }
+            else
+            {
+                Console.WriteLine(Message.printInvalidChoice);
+                goto Label;
+            }
+        }
+        public void LocallyViewVaccine(VaccineCenter vaccineCenterObj)
+        {
+            foreach (var vaccine in vaccineCenterObj.vaccines)
+            {
+                Console.WriteLine(vaccine.vname +" : "+vaccine.vcount);
+            }
+        }
+        public void IncreaseVaccineCount(VaccineCenter vaccineCenterObj)
+        {
+              
+            LocallyViewVaccine(vaccineCenterObj);
+            Console.Write("\n" + Message.inputIncrementVaccineName);
             string vaccineName = Console.ReadLine();
-            
-        decDosesOptions: Console.Write($"How many doses of {vaccineName} do you want to decrease: ");
-            int ivcount;
-            try
-            {
-                ivcount = Convert.ToInt32(Console.ReadLine());
-                string input = VaccineController.decrementVaccines(ivcount, vaccineName, vc);
-                Console.WriteLine(input);
-            }
-            catch
-            {
-                ExceptionController.OnlyNumeric();
-                goto decDosesOptions;
-            }
            
+            Console.Write("\n"+Message.inputUpdateVaccineCount);
+            int vaccineCount = Validation.IntValidate();
+            
+            var vaccineObj=vaccineCenterObj.vaccines.Find(vaccine=>vaccine.vname==vaccineName);
+            if (vaccineObj == null) { Console.WriteLine(Message.printUnavailableVaccine); return; }
+            
+                if (vaccineControllerObj.UpdateVaccine(vaccineObj, "increase", vaccineCount) == false)
+                    Console.WriteLine(Message.printNoIncrementOFVaccine);
+                else
+                    Console.WriteLine(Message.printIncrementOFVaccine);       
         }
-        public static void ViewVaccine(string vc)
+        public void DecreaseVaccineCount(VaccineCenter vaccineCenterObj)
         {
-            List<VaccineAvailable> vaccine = VaccineController.ViewVaccinesLocally(vc);
-            var result = vaccine.Select(v => $"{v.VName} : {v.vcount}");
-            Console.WriteLine(string.Join(Environment.NewLine, result));
+            label: Console.WriteLine("\n" + Message.inputDecrementVaccineName);
+            string vaccineName = Console.ReadLine();
+            Console.Write("\n" + Message.inputDecrementVaccineCount);
+            int vaccineCount = Validation.IntValidate();
+            var vaccineObj = vaccineCenterObj.vaccines.Find(vaccine => vaccine.vname == vaccineName);
+            if(vaccineObj == null) { Console.WriteLine(Message.printUnavailableVaccine); goto label; }
+            if (vaccineControllerObj.UpdateVaccine(vaccineObj, "decrease", vaccineCount) == false)
+                Console.WriteLine(Message.printNoDecrementOFVaccine);
+            else Console.WriteLine(Message.printDecrementOFVaccine);
         }
-
-        public static void PatientRecord(string vc)
-        {
-            Console.WriteLine("Patient Records are : ");
-            List<Appointment> patientDetails=PatientController.RecordOfPatientsOfVC(vc);
-            var formattedAppointments = patientDetails.Select(pat => 
-            $"Phone No: {pat.patientPhoneNo}, Vaccine Name: {pat.VName}, Date: {pat.dt}");
-            string result = string.Join(Environment.NewLine, formattedAppointments);
-            Console.WriteLine(result);
-        }
-        public static void AddVaccineToCenter(string vc)
+        public void AddVaccineToCenter(VaccineCenter vaccineCenter)
         {
             while (true)
             {
-                Console.Write("Which vaccine you want to add from below available vaccines : ");
-                VaccineUI.ViewVaccine();
-            dosesCountOptions: Console.WriteLine("how much doses you want to add initially ? ");
+                
+                List<Vaccine> vaccineList =globalAdminObj.GloballyViewVaccine();
+                Console.Write(Message.inputAddVaccineToCenter);
                 var addVaccines = Console.ReadLine();
-                int idoses;
-                try
+                var vaccineObj = vaccineList.Find(vaccine => vaccine.vname == addVaccines);
+                if (vaccineObj==null)
                 {
-                    idoses = Convert.ToInt32(Console.ReadLine());
+                    Console.WriteLine(Message.printInvalidChoice);
+                    continue;
                 }
-                catch
-                {
-                    ExceptionController.OnlyNumeric();
-                    goto dosesCountOptions;
-                }
-            //
-            minAgeOptions: Console.Write("Enter min age for vaccine : ");
-                int minAge;
-                try
-                {
-                    minAge = Convert.ToInt32(Console.ReadLine());
-                }
-                catch
-                {
-                    ExceptionController.OnlyNumeric();
-                    goto minAgeOptions;
-                }
-            //
-            maxAgeOptions: Console.Write("Enter max age for vaccine : ");
-                int maxAge;
-                try
-                {
-                    maxAge = Convert.ToInt32(Console.ReadLine());
-                }
-                catch
-                {
-                    ExceptionController.OnlyNumeric();
-                    goto maxAgeOptions;
-                }
-
-                var input = VaccineController.VaccineAddInCenter(vc, addVaccines, idoses, minAge, maxAge);
-                if (input == null)
-                { continue; }
-                else { Console.WriteLine(input); break; }
+                
+                Console.WriteLine(Message.inputAddVaccineToCenterCount);
+                int doses = Validation.IntValidate();
+                bool isVaccinePresent = false;
+                var vaccine=vaccineCenter.vaccines.Find(v=>v.vname == addVaccines);
+                if (vaccine != null) { Console.WriteLine(Message.printVAaccinePresentAlready); continue; }
+                if ( vaccineControllerObj.VaccineAddInCenter(vaccineCenter,vaccineObj,doses) == false)
+                { Console.WriteLine(Message.printVaccineNotAdded);
+                continue; }
+                else break;
             }
+            Console.WriteLine(Message.printVaccineAdded);
 
         }
 
+        public void ViewAppointments(Admin admin, VaccineCenter vaccineCenterObj)
+        {
+            List<Appointment> AppointmentList = appointmentControllerObj.ViewAppointment(admin, vaccineCenterObj.VcName);
+            if (AppointmentList.Count == 0) {Console.WriteLine(Message.printNoAppointment); return; }
+            Console.WriteLine(Message.printViewAppointments);
+            foreach (Appointment appointment in AppointmentList)
+                {
+                    if(appointment.dt>=DateTime.Now.Date)
+                    Console.WriteLine(appointment.VName + ", " + appointment.patientPhoneNo + ", " + appointment.dt);
+                }
+        }
+        public void ViewPastRecord(Admin admin, VaccineCenter vaccineCenterObj)
+        {
+            List<Appointment> AppointmentList = appointmentControllerObj.ViewAppointment(admin, vaccineCenterObj.VcName);
+
+            foreach (Appointment appointment in AppointmentList)
+            {
+                if (appointment.dt < DateTime.Now.Date)
+                    Console.WriteLine(appointment.VName + ", " + appointment.patientPhoneNo + ", " + appointment.dt);
+            }
+        }
     }
 }

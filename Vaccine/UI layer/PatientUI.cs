@@ -5,178 +5,162 @@ namespace Project
 {
     
     public class PatientUI : User {
-        public static void choose(string pn)
+        VaccineController vaccineControllerObj = new VaccineController();
+        PatientController patientControllerObj = new PatientController();
+        AppointmentController appointmentControllerObj = new AppointmentController();
+        AppointmentUI appointmentObj = new AppointmentUI();
+        public void choose(Patient patientObj)
         {
             
             while (true)
             {
                 
-               Console.ForegroundColor = ConsoleColor.DarkGray;
-               PatientUIOption: Choose.PatientUIChoose();
-                PatientChoose input;
-                try
-                {
-                     input = (PatientChoose)Convert.ToInt32(Console.ReadLine());
-
-                }
-                catch
-                {
-                    ExceptionController.OnlyNumeric();
-                    goto PatientUIOption;
-                }
+               Console.ForegroundColor = ConsoleColor.Gray;
+               Choose.PatientUIChoose();
+                PatientChoose input = (PatientChoose)Validation.IntValidate() ;
                 Console.ResetColor();
                 switch (input)
                 {
                     case PatientChoose.ViewVaccines:
-                        chooseVC(pn);
-                        break;
+                        chooseVC(patientObj);
+                        continue;
 
                     case PatientChoose.ViewPastRecords:
-                        ViewPastRecordsofPatient(pn);
+                         PastRecordOfPatient(patientObj);
                         continue;
 
 
-                    /*case PatientChoose.GetCertificate:
-                        GetCertificateByPhoneN(pn, vname);
-                        continue ;*/
+                    case PatientChoose.ViewAppointments:
+                        
+                        appointmentObj.viewAppointments(patientObj);
+                        continue;
+
+                    case PatientChoose.CancelAppointment:
+                        appointmentObj.CancelAppointment(patientObj);
+                        continue;
+
                     case PatientChoose.Exit:
                         Environment.Exit(0);
                         break;
+                    
                     default:
-                        Console.WriteLine("Enter a valid input !");
+                        Console.WriteLine(Message.printInvalidChoice);
                         continue;
                 }
                 break;
             }
             
         }
-       
-        public static void PatientUIHelper(string pn)
-        {
-            PatientUIHelperOption: Choose.PatientUIChoose();
-        PatientUIHelperOptions: HelperPatient input;
-            try
-            {
-                input = (HelperPatient)Convert.ToInt32(Console.ReadLine());
 
-            }
-            catch
+        public void chooseVC(Patient patientObj)
+        {
+            var vaccineAges=ViewAgeWiseVaccines(patientObj);
+            VaccineIsAvailable(vaccineAges,patientObj);
+        }
+        public List<string> ViewAgeWiseVaccines(Patient patientObj)
+        {
+            Console.Write(Message.inputAge);
+            int age = Validation.IntValidate();
+
+            Console.Write(Message.printAvailableVaccine);
+            List<string> vaccineAges = ViewVaccineAgeWise(age);
+
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Helper(patientObj);
+            return vaccineAges;        
+        }
+           
+        public void PastRecordOfPatient(Patient patientObj)
+
+        {
+            List<Appointment> pastRecords = appointmentControllerObj.ViewAppointment(patientObj);
+            var recordList= pastRecords.FindAll(pastRecord => pastRecord.dt < DateTime.Now.Date);
+            if (recordList.Count == 0)
             {
-                ExceptionController.OnlyNumeric();
-                goto PatientUIHelperOptions;
+                Console.WriteLine(Message.printNoPastRecords);
+                return;
             }
-            switch (input)
-            {
-                case HelperPatient.Back:
-                    choose(pn);
-                    break;
-                    case HelperPatient.Exit:
-                    Environment.Exit(0);
-                    break;
-                default:
-                    Console.WriteLine("Enter a valid input!");
-                    break;
+            foreach (var record in recordList)
+                {
+                Console.WriteLine("Vaccine : " +record.VName + " on date : "+record.dt);
             }
         }
-        public static void chooseVC(string pn)
+        public List<string> ViewVaccineAgeWise(int age)
         {
-            AgeOption: Console.Write("Enter age : ");
-            int iage;
-            try
-            {
-                iage = Convert.ToInt32(Console.ReadLine());
+            List<string> vaccineList = vaccineControllerObj.ViewVaccineByAge(age);
+            if (vaccineList.Count == 0)
 
-            }
-            catch
             {
-                ExceptionController.OnlyNumeric();
-                    goto AgeOption;
+                Console.WriteLine(Message.printUnavailableVaccine);
+                return null;
             }
-            Console.Write("Available vaccines are : ");
-            List<string> vaccineages = ViewVaccineAgeWise(iage,pn);
-            string result = string.Join(", ", vaccineages);
-            Console.Write(result);
-            Console.WriteLine();
-            Console.ForegroundColor = ConsoleColor.Blue;
-        ChooseVaccineOption: VaccineSelectOption:  Choose.VaccineSelectChoose();
-            VaccineSelect input;
-            try
-            {
-                input = (VaccineSelect)Convert.ToInt32(Console.ReadLine());
+                foreach(var vaccine in vaccineList) { Console.WriteLine(vaccine); }
+            return vaccineList;
+        }
 
-            }
-            catch
-            {
-                ExceptionController.OnlyNumeric();
-                goto VaccineSelectOption;
-            }
+        public void Helper(Patient patientObj)
+        {
+            Choose.VaccineSelectChoose();
+        ChooseVaccineOption: VaccineSelect input = (VaccineSelect)Validation.IntValidate();
+
             if (input == VaccineSelect.Exit)
             { Environment.Exit(0); }
+
+            else if (input == VaccineSelect.Back)
+                choose(patientObj);
             else if (input == VaccineSelect.SelectVaccine)
             {
-                Console.ResetColor();
-                while (true)
-                {
+                return;
+            }
+            else goto ChooseVaccineOption;
+        }
+        public void VaccineIsAvailable(List<string> vaccineAges,Patient patientObj) {
+            while (true)
+            {
 
-                    Console.Write("Enter vaccine name : ");
-                    var vaccineN = Console.ReadLine();
-                    if (!vaccineages.Contains(vaccineN))
-                    {
-                        Console.WriteLine("This vaccine is not of your age group ");
-                        continue;
-                    }
-                    var type = VaccineController.FindParticularVaccineCenterWise(vaccineN);
-                    if (type.Count == 0)
-                    {
-                        Console.WriteLine($"{vaccineN} is not available"); continue;
-                    }
-                    Console.WriteLine($"{vaccineN} is available at : ");
-                    string types = string.Join(", ", type);
-                    Console.WriteLine(types);
-                    Console.Write("Which vaccination center you choose from above available centers: ");
+                Console.Write(Message.inputVaccineName);
+                var vaccineName = Console.ReadLine();
+                if (!vaccineAges.Contains(vaccineName))
+                {
+                    Console.WriteLine(Message.printVaccineAboveAge);
+                    continue;
+                }
+                var type = vaccineControllerObj.FindParticularVaccineCenterWise(vaccineName);
+                if (type.Count == 0)
+                {
+                    Console.WriteLine(Message.printUnavailableVaccine); continue;
+                }
+                Console.WriteLine(Message.printAvailableVaccineCenterWise);
+                string types = string.Join(", ", type);
+                Console.WriteLine(types);
+                ChooseVaccineCenter(type, patientObj, vaccineName);
+                break;
+            }
+        }
+        public  void ChooseVaccineCenter(List<string> type,Patient patientObj,string vaccineN)
+            { while(true)
+            { Console.Write(Message.printChooseVC);
                     var centerName = Console.ReadLine();
                     if (!type.Contains(centerName))
                     {
-                        Console.WriteLine("Invalid Details ! ");
+                        Console.WriteLine(Message.printInvalidChoice);
                         continue;
                     }
                     else
                     {
-                        Console.WriteLine("Book your appointment ");
-                        AppointmentUI.bookAppointment(pn, centerName, vaccineN);
+                        Console.WriteLine(Message.inputBookAppointment);
+                        AppointmentUI appointmentUI = new AppointmentUI();
+                        Appointment appointment = new Appointment(patientObj.phoneNo, vaccineN, DateTime.Now, centerName);
+                        appointmentUI.bookAppointment(appointment);
+                    
                     }
                     break;
                 }
             }
-            else
-            {
-                ExceptionController.NotValid();
-                goto ChooseVaccineOption;
-            }
-        }
-        
-        public static List<object> ViewPastRecordsofPatient(string pn)
-            {
            
-            List<object> patients = PatientController.PastRecord(pn);
-            
-                Console.Write($"{patients[0]} past record of vaccines are : ");
-                var patientsToPrint = string.Join("\n", patients.Skip(1));
-                Console.WriteLine(patientsToPrint);
-                return patients;
         }
-       
-        public static List<string> ViewVaccineAgeWise(int age,string pn)
-        {
-            List<string>vaccineages=VaccineController.ViewVaccineByAge(age);
-            if (vaccineages.Count == 0)
-
-            {
-                Console.WriteLine("Currently no vaccines are available of this age group");
-                PatientUIHelper("\n" + pn); }
-            return vaccineages;
-        }
-        public static void GetCertificate(string pn,string vname)
+    }
+        /*public static void GetCertificate(string pn,string vname)
         {
             var vaccineCenter=VaccineCenterController.GiveCertificateToPatient(pn, vname);
             Console.WriteLine($"You got vaccinated by {vname} in ");
@@ -192,9 +176,8 @@ namespace Project
 
             }
         }
-       /* public static void GetCertificateByPhoneN(string pn)
+       *//* public static void GetCertificateByPhoneN(string pn)
         {
             Console.WriteLine();
         }*/
-    }
-}
+    

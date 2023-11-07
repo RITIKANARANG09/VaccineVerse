@@ -1,61 +1,49 @@
-﻿using Newtonsoft.Json;
-
-
+﻿
+using Vaccine.Model;
 namespace Project
 {
     public class AppointmentController {
-        public static bool bookApt(string phoneNo, string VcName, DateTime dt, string VName)
+        List<Appointment> appointmentsList = ConnectToDataBase.DataBaseInstance.readAppointmentList();
+        public bool BookAppointment(Appointment appointmentObject)
         {
-            Appointment appointment = new Appointment(phoneNo, VName, dt);
-
-            var readVaccineCenter = DB.DbInstance.VaccineCenterRead;
-
-            foreach (var vc in readVaccineCenter)
+            bool isBooked = false;
+                    isBooked=AppointmentDataBase.AppointmentInstance.AddAppointment(appointmentObject);
+            if(isBooked==true)
             {
-                if (vc.VcName == VcName)
+
+            }
+            return isBooked ;
+        }
+        public  bool CancelAppointment(Appointment appointmentObject)
+        {
+           bool isCancelled = false;
+            foreach (var appointment in appointmentsList)
+            {
+                if (appointment.patientPhoneNo == appointmentObject.patientPhoneNo && appointment.dt==appointmentObject.dt)
                 {
-                    vc.appointmentDate.Add(appointment);
+                    
+                   isCancelled=AppointmentDataBase.AppointmentInstance.DeleteItem(appointment);
                     break;
                 }
             }
-            try {
-                var appointments = JsonConvert.SerializeObject(readVaccineCenter);
-                File.WriteAllText(@"C:\Users\rnarang\OneDrive - WatchGuard Technologies Inc\Desktop\VaccinationCenter.json", appointments);
-                return true;
-            }
-            catch {
-                ExceptionController.DbException();
-                return false;
-            }
+           return isCancelled;
+            
         }
-        public static bool cancelApt(string phoneNo, string VcName, DateTime dt)
+        public List<Appointment> ViewAppointment(User user, string vaccineCenter="")
         {
-
-            var readVaccineCenter = DB.DbInstance.VaccineCenterRead;
-            var vaccineCenter=readVaccineCenter.Find(v=>v.VcName==VcName);
-            Appointment appointmentToDelete = vaccineCenter.appointmentDate.Find(appointment => appointment.dt == dt && appointment.patientPhoneNo==phoneNo);
-            if(appointmentToDelete == null || dt<DateTime.Now.Date) {
-                return false;
-            }
-            else if (appointmentToDelete != null)
-                {
-                    vaccineCenter.appointmentDate.Remove(appointmentToDelete);   
-                }
-            try
+            
+            if (user.role==Role.Patient)
             {
-                var appointments = JsonConvert.SerializeObject(readVaccineCenter);
-                File.WriteAllText(@"C:\Users\rnarang\OneDrive - WatchGuard Technologies Inc\Desktop\VaccinationCenter.json", appointments);
-                return true;
+                List<Appointment> patientAppointments = appointmentsList.FindAll(a => a.patientPhoneNo == user.phoneNo);
+                return patientAppointments;
             }
-            catch
+            else if (user.role == Role.Admin)
             {
-                ExceptionController.DbException();
-                return false;
+                    List<Appointment> adminAppointments = appointmentsList.FindAll(a => a.VcName==vaccineCenter);
+                    return adminAppointments;
+                
             }
+            return null;
         }
-        /*public static List<Appointment> viewAppointment(string phoneNo)
-        {
-
-        }*/
-        }
+    }
     }

@@ -1,45 +1,40 @@
-﻿using Newtonsoft.Json;
-
-using Vaccine.Model;
-
+﻿
 namespace Project
 {
     internal class DB
     {
         private static DB dbInstance;
 
-        public static string user = @"C:\Users\rnarang\OneDrive - WatchGuard Technologies Inc\Desktop\vjson.json";
-        public static string vaccine = @"C:\Users\rnarang\OneDrive - WatchGuard Technologies Inc\Desktop\vaccines.json";
-        public static string vaccinationCenter = @"C:\Users\rnarang\OneDrive - WatchGuard Technologies Inc\Desktop\VaccinationCenter.json";
-        public static string patient = @"C:\Users\rnarang\OneDrive - WatchGuard Technologies Inc\Desktop\Patient.json";
+        
+        
+       
+        
+        
+        
+        
+        
+        
+        
+        
+        private DB() {
 
-        public List<User> usersRead;
-        public List<VaccineCenter> VaccineCenterRead;
-        public List<Vaccine> VaccineRead;
-        public List<Patient> PatientRead;
-       private DB() {
-
-            usersRead = new List<User>();
-            VaccineCenterRead = new List<VaccineCenter>();
-            VaccineRead = new List<Vaccine>();
-            PatientRead = new List<Patient>();
-
+           
+           
+           
+           
+           
             try
             {
 
 
-                var allUsers = File.ReadAllText(user);
-                if (!String.IsNullOrEmpty(allUsers))
-                usersRead = JsonConvert.DeserializeObject<List<User>>(allUsers);
+               
 
-                var file = File.ReadAllText(vaccinationCenter);
-                VaccineCenterRead = JsonConvert.DeserializeObject<List<VaccineCenter>>(file);
+               
 
-                var vaccines = File.ReadAllText(vaccine);
-                VaccineRead = JsonConvert.DeserializeObject<List<Vaccine>>(vaccines);
+                
 
-                var patients = File.ReadAllText(patient);
-                PatientRead = JsonConvert.DeserializeObject<List<Patient>>(patients);
+
+                
 
 
             }
@@ -60,7 +55,7 @@ namespace Project
                 return dbInstance;
             }
         }
-        public void AddVaccinationCentertoDB(VaccineCenter vc)
+        /*public void AddVaccinationCentertoDB(VaccineCenter vc)
         {
             var vaccinationC = VaccineCenterRead;
             vaccinationC.Add(vc);
@@ -75,10 +70,11 @@ namespace Project
             }
             
 
-        }
+        }*/
         
-        public  string GAaddVaccine(string addVaccine,int idoses=0)
+/*        public  string GAaddVaccine(string addVaccine,int idoses=0)
         {
+           
 
             var vc = VaccineController.ViewVaccinesGloballyCenter();
             var vacc = VaccineRead;
@@ -99,8 +95,8 @@ namespace Project
             
             return "Vaccine added successfully";
         }
-        
-        public  string addVaccineInCenter(string addVaccine, int doses, string vc,int minAge,int maxAge)
+*/
+       /* public string addVaccineInCenter(string addVaccine, int doses, string vc, int minAge, int maxAge)
         {
             var vcDetail = VaccineCenterRead;
 
@@ -108,7 +104,7 @@ namespace Project
             {
                 if (v.VcName == vc)
                 {
-                    var newVaccine = new VaccineAvailable(addVaccine, doses,minAge,maxAge);
+                    var newVaccine = new VaccineAvailable(addVaccine, doses, minAge, maxAge);
                     v.vaccines.Add(newVaccine);
                     try
                     {
@@ -121,21 +117,21 @@ namespace Project
                 }
             }
             return null;
-        }
-        public  void updateVaccine(int count,string addVaccine, string centerName)
+        }*/
+        /*public  void updateVaccine(int count,string addVaccine, VaccineCenter vaccineCenterObj)
         {
             var paths = @"C:\Users\rnarang\OneDrive - WatchGuard Technologies Inc\Desktop\VaccinationCenter.json";
             List<VaccineCenter> v = VaccineCenterRead;
             int i = 0;
             foreach (var obj in v)
             {
-                if (obj.VcName == centerName)
+                if (obj.VcName == vaccineCenterObj.VcName)
                 {
-                    var x = obj.vaccines;
-                    foreach (var vx in x)
+                    var vaccineList= obj.vaccines;
+                    foreach (var vaccine in vaccineList)
                     {
-                        if (vx.VName.Equals( addVaccine )) {
-                            vx.vcount = count;
+                        if (vaccine.VName.Equals( addVaccine )) {
+                            vaccine.vcount = count;
                             try
                             {
                                 var jsonFormattedContent = Newtonsoft.Json.JsonConvert.SerializeObject(v);
@@ -150,8 +146,8 @@ namespace Project
                 i++;
             }
 
-        }
-        public void AddUser(User newUser)
+        }*/
+      /*  public void AddUser(User newUser)
         {
             var users = usersRead;
             users.Add(newUser);
@@ -166,7 +162,7 @@ namespace Project
                 ExceptionController.DbException();
             }
 
-        }
+        }*/
 
     }
 }

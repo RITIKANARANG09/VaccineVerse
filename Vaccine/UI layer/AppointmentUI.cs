@@ -1,82 +1,99 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-
-namespace Project { 
+﻿
+using Vaccine.Model;
+namespace Project
+{
     public class AppointmentUI
     {
-    public static void bookAppointment(string pn, string centerName, string vname)
-    {
-    ValidD: Console.Write("Enter a date (e.g., '2023-10-27'): ");
-        while (true)
+        AppointmentController appointmentObj = new AppointmentController();
+        public void bookAppointment(Appointment appointment)
         {
-            string input = "";
-            DateTime dt;
-            try
+        ValidD: Console.Write(Message.inputDate);
+            while (true)
             {
-                input = Console.ReadLine();
-                dt = DateTime.Parse(input);
+                DateTime date = Validation.DateValidate();
+               
+                if (date >= DateTime.Now.Date)
+                {
+                    appointment.dt = date;
+                    if (appointmentObj.BookAppointment(appointment))
+                    {
 
-            }
-            catch { Console.WriteLine("Enter a valid datetime "); goto ValidD; }
-            if (DateTime.TryParse(input, out DateTime userDate) && dt >= DateTime.Now.Date)
-            {
-                if (AppointmentController.bookApt(pn, centerName, dt, vname))
-                {
-                    PatientController.AddPastRecordOfPatient(pn, vname, centerName);
-                    Console.WriteLine("Appointment booked successfully");
+                        Console.WriteLine(Message.printAppointmentBooked);
+                        break;
+                    }
                 }
-            }
-            else
-            {
-                if (dt < DateTime.Now.Date)
+                else
                 {
-                    Console.Write(" Please enter a valid date :");
+                    if (date < DateTime.Now.Date)
+                    {
+                        Console.Write(Message.inputValidDate);
+                        continue;
+                    }
+                    Console.Write(Message.inputValidDate);
                     continue;
                 }
-                Console.Write("Invalid date format. Please enter a valid date :");
-                continue;
+
+             
             }
-            break;
-        }
-        Console.WriteLine("Press 1 to download certificate : ");
-        Console.WriteLine("Press 2 to exit :");
-        var inp = Console.ReadLine();
-        /*switch (inp)
-        {
-            case "1":
-                GetCertificate(pn, vname); break;
-            case "2":
-                Environment.Exit(0);
-                break;
-        }*/
-    }
-        public static void viewAppointment(string pn)
-        {
+
 
         }
-        public static void CancelAppointment(string pn, string centerName,Appointment appointment)
+        public void viewAppointments<T>(T user) where T : User
         {
-            Console.WriteLine(Message.inputDateCancelApt);
-            var input=Console.ReadLine();
-            DateTime dt = DateTime.Parse(input);
-            if(appointment.dt!=dt)
+            if (user.role == Role.Patient)
             {
-                Console.WriteLine("You don't have any appointments on this particular date !");
+                appointmentObj.ViewAppointment(user);
+            }
+
+            List<Appointment> appointments = appointmentObj.ViewAppointment(user);
+            Console.WriteLine(Message.printViewAppointments);
+            if (appointments.Count == 0)
+            {
+                Console.WriteLine(Message.printNoAppointment);
                 return;
             }
-            if (DateTime.TryParse(input, out DateTime userDate) && dt <= DateTime.Now.Date)
+            foreach (var appointment in appointments)
             {
-                if (AppointmentController.cancelApt(pn, centerName, dt))
+                if (appointment.dt >= DateTime.Now.Date)
                 {
-                   // PatientController.AddPastRecordOfPatient(pn, vname, centerName);
-                    Console.WriteLine("Appointment booked successfully");
+                    Console.WriteLine("Vaccine : " + appointment.VName + " on date : " + appointment.dt);
                 }
             }
-
         }
-}
+        public void CancelAppointment(Patient patientObj)
+        {
+            List<Appointment> patientsAppointmentList = appointmentObj.ViewAppointment(patientObj);
+            Console.WriteLine(Message.printViewAppointments);
+
+            foreach (var appointments in patientsAppointmentList)
+            {
+                if (appointments.dt >= DateTime.Now.Date)
+                    Console.WriteLine(appointments.VName + " : " + appointments.dt);
+            }
+
+        ValidD: Console.Write(Message.inputDate);
+            while (true)
+            {
+              
+                DateTime date=Validation.DateValidate();
+                Appointment appointment = patientsAppointmentList.Find(v => v.dt == date);
+
+                if (appointment == null)
+                {
+                    Console.WriteLine(Message.printNoAppointment);
+                    return;
+                }
+                if (date >= DateTime.Now.Date)
+                {
+                    if (appointmentObj.CancelAppointment(appointment))
+                    {
+
+                        Console.WriteLine(Message.printCancelledAppointment);
+                       
+                    }
+                }
+                break;
+            }
+        }
+    }
 }

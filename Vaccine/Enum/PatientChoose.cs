@@ -6,16 +6,20 @@ namespace Project
     {
         ViewVaccines = 1,
         ViewPastRecords,
+        ViewAppointments,
+        CancelAppointment,
         Exit
     }
-    public enum HelperPatient
-    {
-        Back = 1,
-        Exit
-    }
+    
     public enum VaccineSelect
     {
         SelectVaccine=1,
+        Back,
+        Exit
+    }
+    public enum PatientChooseHelper
+    {
+        Login=1,
         Exit
     }
 }

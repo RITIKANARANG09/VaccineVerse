@@ -5,27 +5,23 @@ namespace Project
 {
     internal class LoginUI
     {
-        public static   List<string> UserLogin()
+        public static User UserLogin()
         {
-            List<string> LoginCredentials=new List<string>();
             while (true)
             {
-                Console.WriteLine("Enter username : ");
-                var username = Console.ReadLine();
-                Console.WriteLine("Enter password : ");
+                
+                Console.WriteLine("\n" + Message.printPhoneNoFormat);
+                var phnNo = Console.ReadLine();
+                Console.WriteLine(Message.inputPassword);
                 var password = HideP.HidePassword();
-                Console.WriteLine("\nEnter phone number : ");
-                var phnNo= Console.ReadLine();
-                string role = AuthManager<User>.AuthMInstance.Login(username, password, phnNo);
-                if (String.IsNullOrWhiteSpace(username) || String.IsNullOrWhiteSpace(password) || String.IsNullOrWhiteSpace(phnNo) || role == "Wrong input")
+               
+                User user= AuthManager<User>.AuthMInstance.Login(password, phnNo);
+                if (String.IsNullOrWhiteSpace(password) || String.IsNullOrWhiteSpace(phnNo) || user==null)
                 {
-                    Console.WriteLine("Invalid credentials");
+                    Console.WriteLine("\n"+Message.printInvalidChoice);
                     continue;
                 }
-                else if(role==null)
-                 continue;
-                LoginCredentials.Add(role); LoginCredentials.Add(phnNo);
-                return LoginCredentials;
+                return user;
             }
         }
         

@@ -16,7 +16,7 @@ namespace Project
             {
                 return true;
             }
-            ExceptionController.Message("Invalid credentials");
+            ExceptionController.Message(Message.printInvalidChoice);
             return false;
         }
     }

@@ -1,186 +1,79 @@
-﻿using Newtonsoft.Json;
+﻿
 namespace Project
 {
     public class VaccineController
     {
-        public static List<string> ViewVaccinesGloballyCenter()
+        public List<VaccineCenter> VaccineCentersList = ConnectToDataBase.DataBaseInstance.readVaccineCenterList();
+        public List<Vaccine> VaccinesList = ConnectToDataBase.DataBaseInstance.readVaccineList();
+        public List<Vaccine> ViewVaccinesGlobally()
         {
-            int i = 1;
-            List<string> list = new List<string>();
-            var vaccineCenter = DB.DbInstance.VaccineCenterRead;
-            foreach (VaccineCenter v in vaccineCenter)
+            
+            List<Vaccine> vaccineList= new List<Vaccine>();
+            foreach(var vaccine in VaccinesList)
             {
-                var r = v.vaccines;
-                foreach (var r2 in r)
-                {
-                    if (r2.vcount > 0 && !list.Contains(r2.VName))
-                        list.Add(r2.VName);
-                }
-            }
-            var vaccines = DB.DbInstance.VaccineRead;
-            foreach(var v in vaccines)
-            {
-                if(!list.Contains(v.vname.ToString()))
-                list.Add(v.vname.ToString());
+                if(!vaccineList.Contains(vaccine))
+                    vaccineList.Add(vaccine);
             }
            
-            return list;
+            return vaccineList;
         }
-        public static List<string> FindParticularVaccineCenterWise(string vaccine)
+        public  List<string> FindParticularVaccineCenterWise(string vaccine)
         {
             List<string> list = new List<string>();
-            var vaccineCenter = DB.DbInstance.VaccineCenterRead;
-            foreach (VaccineCenter v in vaccineCenter)
+           
+            foreach (VaccineCenter vaccineCenter in VaccineCentersList)
             {
-                var r = v.vaccines;
-                foreach (var r2 in r)
+                var vaccinesList = vaccineCenter.vaccines;
+                foreach (var vaccines in vaccinesList)
                 {
-                    if (r2.vcount > 0 && r2.VName == vaccine)
-                        list.Add(v.VcName);
+                    if (vaccines.vcount > 0 && vaccines.vname == vaccine)
+                        list.Add(vaccineCenter.VcName);
                 }
             }
             return list;
         }
-        public static string AddVaccineGlbally(string addVaccine,int idoses)
+        public bool AddVaccineGlobally(Vaccine vaccine)
         {
-            var input = ViewVaccinesGloballyCenter();
-            if(input.Any(v=>v.Equals(addVaccine)))
-                return "Vaccine already present !";
-            Vaccine v = new Vaccine(addVaccine,idoses);
-            var p = DB.DbInstance.VaccineRead;
-            p.Add(v);
-            try
-            {
-                var vaccineJSON = JsonConvert.SerializeObject(p);
-                File.WriteAllText(@"C:\Users\rnarang\OneDrive - WatchGuard Technologies Inc\Desktop\vaccines.json", vaccineJSON);
-                return "Vaccine added successfully!";
-            }
-            catch
-            {
-                ExceptionController.DbException();
-                return null;
-            }
+           
+            
+            return VaccineDataBase.VaccineInstance.GloballyAddVaccine(vaccine);
+            
         }
-        public static string incrementVaccines(int ivcount, string vaccineName, string vc)
+        public bool UpdateVaccine(Vaccine vaccineObj,string updateCheck,int vaccineCount)
         {
-            var vaccineCenter = DB.DbInstance.VaccineCenterRead;
-            foreach (var v in vaccineCenter)
-            {
-                if (v.VcName == vc)
-                {
-                    var r = v.vaccines;
-
-                    bool flag = false;
-                    foreach (var r2 in r)
-                    {
-                        if (r2.VName == vaccineName)
-                        {
-                            //int x = r2.vcount + ivcount;
-                            r2.vcount += ivcount;
-                            flag = true;
-                            DB.DbInstance.updateVaccine(r2.vcount, vaccineName, v.VcName);
-                            ViewVaccinesLocally(vc);
-                            return "Vaccine incremented successfully";
-                        }
-                    }
-                }
-
-            }
-            return "This vaccine is not available currently in the center ";
+            if (updateCheck == "increase")
+                vaccineObj.vcount += vaccineCount;
+            else if(updateCheck=="decrease")
+                vaccineObj.vcount -= vaccineCount;
+            return VaccineCenterDataBase.VaccineCenterInstance.updateVaccine(VaccineCentersList);
         }
-        public static string decrementVaccines(int ivcount, string vaccineName, string vc)
+       
+        public  List<Vaccine> ViewVaccinesLocally(VaccineCenter vaccineCenterObject)
         {
-            var vaccineCenter = DB.DbInstance.VaccineCenterRead;
-            foreach (var v in vaccineCenter)
-            {
-                if (v.VcName == vc)
-                {
-                    var r = v.vaccines;
-
-                    bool flag = false;
-                    foreach (var r2 in r)
-                    {
-                        if (r2.VName == vaccineName && r2.vcount > 0 && r2.vcount >= ivcount)
-                        {
-                            //int x = r2.vcount + ivcount;
-                            Console.WriteLine("ivcount is : " + ivcount);
-                            r2.vcount = r2.vcount - ivcount;
-                            flag = true;
-                            DB.DbInstance.updateVaccine(r2.vcount, vaccineName, v.VcName);
-                            ViewVaccinesLocally(vc);
-                            return "Vaccine decremented successfully";
-                        }
-                        else if (r2.VName == vaccineName && r2.vcount == 0)
-                        {
-                            return "Currently, this vaccine is out of stock.";
-                        }
-                        else if (r2.VName == vaccineName && r2.vcount < ivcount)
-                        {
-                            return $"Only {r2.vcount} vaccines are currently available.";
-                        }
-                    }
-                }
-
-            }
-            return "This vaccine is not available currently in the center ";
+                    return vaccineCenterObject.vaccines;
         }
-        public static List<VaccineAvailable> ViewVaccinesLocally(string vaccineCenters)
+        public  List<string> ViewVaccineByAge(int age)
         {
-
-            var vc = DB.DbInstance.VaccineCenterRead;
-            List<VaccineAvailable> va = new List<VaccineAvailable>();
-            foreach (var v in vc)
-            {
-                if (v.VcName == vaccineCenters)
-                {
-                    var r = v.vaccines;
-
-                    foreach (var r2 in r)
-                    {
-                        if (r2 != null)
-                        { va.Add(r2); }
-                    }
-                }
-            }
-
-            return va;
-        }
-        public static List<string> ViewVaccineByAge(int age)
-        {
-            var readvaccine = DB.DbInstance.VaccineCenterRead;
+           
             List<string> list = new List<string>();
-            foreach (var v in readvaccine)
+            foreach (var vaccineCenter in VaccineCentersList)
             {
-                var s = v.vaccines;
-                foreach (var s2 in s)
+                var vaccinesList = vaccineCenter.vaccines;
+                foreach (var vaccine in vaccinesList)
                 {
-                    if (s2.minAge <= age && s2.maxAge >= age && !list.Contains(s2.VName))
-                        list.Add(s2.VName);
+                    if (vaccine.minAge <= age && vaccine.maxAge >= age && !list.Contains(vaccine.vname))
+                        list.Add(vaccine.vname);
                 }
             }
             return list;
         }
-        public static string VaccineAddInCenter(string vc, string vaccineName, int idoses, int minAge, int maxAge)
+        public bool VaccineAddInCenter(VaccineCenter vaccineCenter, Vaccine vaccineObj,int doses)
 
         {
-
-            var readVaccinesInVaccinationCenter = DB.DbInstance.VaccineCenterRead;
-
-            var vaccineCenter = readVaccinesInVaccinationCenter.Find(v => v.VcName == vc);
-            var vaccineFind = vaccineCenter.vaccines.Find(vacc => vacc.VName == vaccineName);
-            if (vaccineFind == null)
-            {
-                string input = DB.DbInstance.addVaccineInCenter(vaccineName, idoses, vc, minAge, maxAge);
-                if (input != null)
-                {
-                    return input;
-                }
-                else
-                {
-                    return "Vaccine can't be added";
-                }
-            }
-            return null;
+            vaccineObj.vcount = doses;
+            vaccineCenter.vaccines.Add(vaccineObj);
+            var input = VaccineCenterDataBase.VaccineCenterInstance.addVaccineInCenter(VaccineCentersList);
+            return input;
         }
 
     }

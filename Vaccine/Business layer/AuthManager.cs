@@ -1,11 +1,13 @@
 ﻿
 using Vaccine.Model;
-//using Vaccine.Model;
+
 
 namespace Project
 {
     public class AuthManager<T> where T : User, new()
     {
+        List<User> UsersList = ConnectToDataBase.DataBaseInstance.readUsersList();
+        List<VaccineCenter> VaccineCenterList = ConnectToDataBase.DataBaseInstance.readVaccineCenterList();
         private static AuthManager<T> authMInstance;
         public static AuthManager<T> AuthMInstance
         {
@@ -19,22 +21,29 @@ namespace Project
             }
 
         }
-        public string Login(string Username, string Password, string pn)
+        public bool CheckUserExists(string username)
         {
-            List<User> users = DB.DbInstance.usersRead;
-                var matchingUser = users.FirstOrDefault(user => user.Username == Username && user.Password == Password && user.phoneNo == pn);
+            User user = UsersList.Find(user => user.Username == username);
+            if (user == null) return false;
+            else return true;
+        }
+        public User Login( string Password, string pn)
+        {
+            
+                var matchedUser = UsersList.FirstOrDefault(user=> user.Password == Password && user.phoneNo == pn);
 
-                if (matchingUser != null)
+                if (matchedUser != null)
                 {
-                    return matchingUser.role.ToString();
+                
+                    return matchedUser;
                 }
-                return "Wrong input";
+                return null;
         }
         public bool CheckPhoneNoExists(string phoneNo)
         {
-            List<User> users = DB.DbInstance.usersRead;
+           
 
-            User user = users.Find(u => u.phoneNo == phoneNo);
+            User user = UsersList.Find(u => u.phoneNo == phoneNo);
             if (user != null)
             {
                 return true;
@@ -53,49 +62,42 @@ namespace Project
                 phoneNo = phoneNo,
                 role = (Role)roleInput
             };
-            DB.DbInstance.AddUser(newUser);
+     
+            UserDataBase.UserInstance.AddUser(newUser);
             if (roleInput == Role.Admin)
             {
-                VaccineCenterController.AddNewVaccinationCenter(newUser, vaccinationCenterName);
+                VaccineCenterController centerControllerObj=new VaccineCenterController();
+                centerControllerObj.AddNewVaccinationCenter(newUser, vaccinationCenterName);
             }
 
         }
-        public string VerifyPhone(string pn)
+        public bool VerifyPhone(string pn)
         {
 
             bool ans = RegexValid.PhoneNoVerify(pn);
-            if (ans == false)
+            return ans;
+        }
+        public VaccineCenter VerifyVaccineCenter(Admin admin,string vaccineCenter)
+        {
+            VaccineCenter center = VaccineCenterList.Find(v => v.VcName == vaccineCenter  &&v.LaName==admin.Username);
+            if (center != null)
             {
-                return "Invalid Credentials";
-
+                return center;
             }
             return null;
         }
-        public bool VerifyVaccineCenter(string vaccineCenter)
-        {
-            List<VaccineCenter> vc = DB.DbInstance.VaccineCenterRead;
-                VaccineCenter center = vc.Find(v => v.VcName == vaccineCenter && v.role == Role.Admin.ToString());
-                if (center != null)
-                {
-                    return true;
-                }
-                Console.WriteLine("Invalid Details ! ");
-                return false;
-        }
         public bool VaccineCenterAlreadyPresent(string vaccineCenter)
         {
-            var vaccineCenterDetails = DB.DbInstance.VaccineCenterRead;
-                var isPresentVCenter = vaccineCenterDetails.Find(v => v.VcName==vaccineCenter);
+            
+                var isPresentVCenter = VaccineCenterList.Find(v => v.VcName==vaccineCenter);
                 if (isPresentVCenter != null)
-                    return false;
-                return true;
+                    return true;
+                return false;
         }
 
         public List<VaccineCenter> ViewAdmins()
         {
-            List<VaccineCenter> admins = new List<VaccineCenter>();
-            var ReadAdmin = DB.DbInstance.VaccineCenterRead;
-                return ReadAdmin;
+                return VaccineCenterList;
         }
 
     }

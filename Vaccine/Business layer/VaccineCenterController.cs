@@ -3,34 +3,35 @@ using Vaccine.Model;
 
 namespace Project
 {
-    
+
     public class VaccineCenterController
     {
-        
-        public static void AddNewVaccinationCenter(User user, string vcName)
+
+        public void AddNewVaccinationCenter(User user, string vcName)
         {
-            VaccineCenter vc = new VaccineCenter
+            VaccineCenter vaccineCenterObject = new VaccineCenter
             {
                 VcName = vcName,
                 LaName = user.Username,
                 username = user.Username,
-                password = user.Password,
-                role = Role.Admin.ToString(),
-                vaccines = new List<VaccineAvailable>(),
-                appointmentDate=new List<Appointment>()
+                /*password = user.Password,*/
+                //role = Role.Admin.ToString(),
+                vaccines = new List<Vaccine>()
             };
+            VaccineCenterDataBase.VaccineCenterInstance.AddVaccinationCentertoDB(vaccineCenterObject);
 
-            DB.DbInstance.AddVaccinationCentertoDB(vc);
 
         }
-       
-        
-        public static List<VaccineCenter> GiveCertificateToPatient(string pn,string vname)
-        {
-            var vaccineCenterRead = DB.DbInstance.VaccineCenterRead;
-            var vaccineCenter=vaccineCenterRead.FindAll(v => v.vaccines.Equals(pn) && v.vaccines.Equals(vname));
-            return vaccineCenter;
-        }   
-        
+
+
+
+        /*public static List<VaccineCenter> GiveCertificateToPatient(string pn,string vname)
+            {
+                var vaccineCenterList = ConnectToDataBase.DataBaseInstance.readVaccineCenterList();
+                var vaccineCenter=vaccineCenterList.FindAll(v => v.vaccines.Equals(pn) && v.vaccines.Equals(vname));
+                return vaccineCenter;
+            }   
+
+        }*/
     }
 }

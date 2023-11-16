@@ -1,5 +1,5 @@
 ﻿
-namespace Vaccine.Model
+namespace Project
 {
     public class GlobalAdmin:User
     {

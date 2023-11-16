@@ -1,5 +1,4 @@
 ﻿
-using Vaccine.Model;
 
 namespace Project
 {

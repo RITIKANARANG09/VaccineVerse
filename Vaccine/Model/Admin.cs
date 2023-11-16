@@ -1,10 +1,10 @@
 ﻿
 
-namespace Vaccine.Model
+namespace Project
 {
     public class Admin : User
     {
-        public string vcName { get; set; }
-
+        public string VcName { get; set; }
+        //public Admin(int i) { }
     }
 }

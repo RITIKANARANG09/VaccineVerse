@@ -1,7 +1,4 @@
-﻿
-
-using Newtonsoft.Json;
-using Vaccine.Model;
+﻿using Newtonsoft.Json;
 
 namespace Project
 {
@@ -32,9 +29,10 @@ namespace Project
                 if (!String.IsNullOrEmpty(patientsList))
                     PatientsRead = JsonConvert.DeserializeObject<List<Patient>>(patientsList);
             }
-            catch
+            catch(Exception ex) 
             {
-                ExceptionController.DbException();
+                Errors.DbException();
+                ExceptionController.LogException(ex, "Error occured while reading DB");
             }
             }
         }

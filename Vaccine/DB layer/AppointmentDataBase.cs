@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Project
 {
-    public class AppointmentDataBase:DataBase<Appointment>
+    public class AppointmentDataBase : DataBase<Appointment>, IAppointmentDataBase
     {
         private static AppointmentDataBase _appointmentInstance;
         public List<Appointment> AppointmentList;
@@ -19,23 +19,26 @@ namespace Project
                 return _appointmentInstance;
             }
         }
-        private AppointmentDataBase() {
+        private AppointmentDataBase()
+        {
             AppointmentList = new List<Appointment>();
             _appointmentPath = @"C:\Users\rnarang\OneDrive - WatchGuard Technologies Inc\Desktop\Appointment.json";
-            try {
+            try
+            {
                 var appointments = File.ReadAllText(_appointmentPath);
                 AppointmentList = JsonConvert.DeserializeObject<List<Appointment>>(appointments);
             }
-            catch
+            catch(Exception ex) 
             {
-                ExceptionController.DbException();
+                Errors.DbException();
+                ExceptionController.LogException(ex, "Error occured while reading DB");
             }
-            }
-        
-      
+        }
+
+
         public bool AddAppointment(Appointment appointment)
         {
-           return AddItem(appointment, AppointmentList, _appointmentPath);
+            return AddItem(appointment, AppointmentList, _appointmentPath);
         }
         public bool DeleteItem(Appointment appointment)
         {

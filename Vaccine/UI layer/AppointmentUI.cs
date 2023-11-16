@@ -1,83 +1,71 @@
 ﻿
-using Vaccine.Model;
 namespace Project
 {
     public class AppointmentUI
     {
         AppointmentController appointmentObj = new AppointmentController();
-        public void bookAppointment(Appointment appointment)
+        public void BookAppointment(Appointment appointment)
         {
-        ValidD: Console.Write(Message.inputDate);
+           Console.Write(Message.inputDate);
             while (true)
             {
                 DateTime date = Validation.DateValidate();
-               
-                if (date >= DateTime.Now.Date)
-                {
-                    appointment.dt = date;
+                    appointment.Date = date;
                     if (appointmentObj.BookAppointment(appointment))
                     {
-
                         Console.WriteLine(Message.printAppointmentBooked);
                         break;
                     }
-                }
-                else
-                {
-                    if (date < DateTime.Now.Date)
-                    {
-                        Console.Write(Message.inputValidDate);
-                        continue;
-                    }
+                   else
+                   {
                     Console.Write(Message.inputValidDate);
                     continue;
-                }
-
-             
+                   }
             }
-
-
         }
-        public void viewAppointments<T>(T user) where T : User
+        public void ViewAppointments<T>(T user) where T : User
         {
-            if (user.role == Role.Patient)
+            if (user.RoleOfUser.Equals(Role.Patient))
             {
                 appointmentObj.ViewAppointment(user);
             }
 
-            List<Appointment> appointments = appointmentObj.ViewAppointment(user);
+            List<Appointment> AppointmentsList = appointmentObj.ViewAppointment(user);
             Console.WriteLine(Message.printViewAppointments);
-            if (appointments.Count == 0)
+            bool flag = false;
+            foreach (var appointment in AppointmentsList)
             {
-                Console.WriteLine(Message.printNoAppointment);
-                return;
-            }
-            foreach (var appointment in appointments)
-            {
-                if (appointment.dt >= DateTime.Now.Date)
+                if (appointment.Date >= DateTime.Now.Date)
                 {
-                    Console.WriteLine("Vaccine : " + appointment.VName + " on date : " + appointment.dt);
+                    flag = true;
+                    Console.WriteLine("Vaccine : " + appointment.VName + " on date : " + appointment.Date);
+                    Console.Write(", at"+ appointment.VcName+", "+appointment.Address);
                 }
             }
+            if(flag==false)
+                Console.WriteLine(Message.printNoAppointment);
         }
         public void CancelAppointment(Patient patientObj)
         {
-            List<Appointment> patientsAppointmentList = appointmentObj.ViewAppointment(patientObj);
+            List<Appointment> PatientsAppointmentList = appointmentObj.ViewAppointment(patientObj);
+            
             Console.WriteLine(Message.printViewAppointments);
-
-            foreach (var appointments in patientsAppointmentList)
+            foreach (var appointments in PatientsAppointmentList)
             {
-                if (appointments.dt >= DateTime.Now.Date)
-                    Console.WriteLine(appointments.VName + " : " + appointments.dt);
+                if (appointments.Date >= DateTime.Now.Date)
+                {
+                    Console.WriteLine(appointments.VName + " : " + appointments.Date);
+                    Console.Write(" at :" + appointments.VcName + ", " + appointments.Address);
+                }
             }
 
-        ValidD: Console.Write(Message.inputDate);
+        Console.Write(Message.inputDate);
             while (true)
             {
               
                 DateTime date=Validation.DateValidate();
-                Appointment appointment = patientsAppointmentList.Find(v => v.dt == date);
-
+                var appointment= AuthManager<Patient>.AuthMInstance.FindAppointments(date);
+               
                 if (appointment == null)
                 {
                     Console.WriteLine(Message.printNoAppointment);

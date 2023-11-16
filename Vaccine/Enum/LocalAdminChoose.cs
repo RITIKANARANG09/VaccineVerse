@@ -6,7 +6,7 @@ namespace Project
             ViewAvailableVaccines = 1,
             IncrementVaccines,
             DecrementVaccines,
-            Appointments,
+            ViewAppointments,
             AddVaccineToCenter,
             ViewPatientPastRecord,
             

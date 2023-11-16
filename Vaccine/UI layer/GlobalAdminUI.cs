@@ -1,13 +1,14 @@
 ﻿
-using Vaccine.Model;
 
 namespace Project
 {
     
     public class GlobalAdminUI : User
     {
-        VaccineController vaccineControllerObj = new VaccineController();
-        public  void choose(GlobalAdmin globalAdminObj)
+        IVaccineControllerForGlobalAdmin vaccineControllerObj = new VaccineController();
+        LocalAdminController localAdminControllerObj = new LocalAdminController();
+
+        public void choose(GlobalAdmin globalAdminObj)
         {
             
 
@@ -22,22 +23,22 @@ namespace Project
                 switch (input)
                 {
                     case GlobalAdminChoose.AddAdmin:
-                        addAdminChecker(globalAdminObj);
+                        AddAdmin(globalAdminObj);
                         continue ;
 
                     case GlobalAdminChoose.AddVaccine:  
                         GloballyAddVaccine();
-                        helper(globalAdminObj);
+                        Helper(globalAdminObj);
                         continue;
 
                     case GlobalAdminChoose.ViewVaccines:
                         GloballyViewVaccine();
-                        helper(globalAdminObj);
+                        Helper(globalAdminObj);
                         continue;
                     
-                    case GlobalAdminChoose.ViewAdmin:
-                        viewAdmins();
-                        helper(globalAdminObj);
+                    case GlobalAdminChoose.ViewAdmins:
+                        ViewAdmins();
+                        Helper(globalAdminObj);
                         continue;
                     
                     case GlobalAdminChoose.Exit:
@@ -45,37 +46,22 @@ namespace Project
                         break;
                     
                     default:
-                        ExceptionController.NotValid();
+                        Errors.NotValid();
                         continue;
                 }
                 break;
             }
         }
-        public  void GloballyAddVaccine()
+        void GloballyAddVaccine()
         {
             while (true)
             {
-
-                Console.Write(Message.inputAddVaccineGlobally);
-                List<Vaccine> vaccinesAvailable = GloballyViewVaccine();
-                var addVaccine = Console.ReadLine();
+                Vaccine newVaccine=InputVaccineDetails();
                 
-                if (vaccinesAvailable.Any(vaccine => vaccine.vname==addVaccine))
-                {
-                    Console.WriteLine(Message.printVAaccinePresentAlready);
-                    continue;
-                }
-
-                Console.WriteLine(Message.inputMinAgeForVaccine);
-                int minAge = Validation.IntValidate();
-                
-                Console.WriteLine(Message.inputMaxAgeForVaccine);
-                var maxAge = Validation.IntValidate();
-               
-                Vaccine newVaccine = new Vaccine(addVaccine, minAge, maxAge);
                 if (vaccineControllerObj.AddVaccineGlobally(newVaccine) == false)
-                {       Console.WriteLine(Message.printVaccineNotAdded);
-                continue;
+                {       
+                    Console.WriteLine(Message.printVaccineNotAdded);
+                    continue;
                 }
                 else
                 {
@@ -84,78 +70,97 @@ namespace Project
                 }
             }
         }
+        Vaccine InputVaccineDetails()
+        {
+            while (true)
+            {
+                Console.Write(Message.inputVaccineName);
+                 GloballyViewVaccine();
+                var vaccineName = Console.ReadLine();
+                var vaccineObj = AuthManager<GlobalAdmin>.AuthMInstance.FindVaccine(vaccineName);
+                if (vaccineObj!=null)
+                {
+                    Console.WriteLine(Message.printVAaccinePresentAlready);
+                    continue;
+                }
+
+                Console.WriteLine(Message.inputMinAgeForVaccine);
+                int minAge = Validation.IntValidate();
+
+                Console.WriteLine(Message.inputMaxAgeForVaccine);
+                var maxAge = Validation.IntValidate();
+
+                var newVaccine = new Vaccine(vaccineName, minAge, maxAge);
+                return newVaccine;
+            }
+        }
+
         public List<Vaccine> GloballyViewVaccine()
         {
-            List<Vaccine> vaccineList =vaccineControllerObj.ViewVaccinesGlobally();
+            List<Vaccine> VaccineList =vaccineControllerObj.ViewVaccinesGlobally();
             Console.WriteLine(Message.printGloballyAvailableVaccine);
-            foreach(var vaccine in vaccineList)
+            foreach(var vaccine in VaccineList)
             {
-                Console.WriteLine(vaccine.vname);
+                Console.WriteLine(vaccine.VName);
             }
-            return vaccineList;
+            return VaccineList;
         }
-        public  void addAdminChecker(GlobalAdmin globalAdminObj)
+        void AddAdmin(GlobalAdmin globalAdminObj)
         {
-            var input = "";var  vaccineCenterInput="";
-            while (true) {
+            string phoneNumber;
+            while (true)
+            {
                 Console.WriteLine(Message.printPhoneNoFormat);
-                input = Console.ReadLine();
+                phoneNumber = Console.ReadLine();
 
-                var phoneVerify = AuthManager<User>.AuthMInstance.VerifyPhone(input);
-                var isPhoneNoExist = AuthManager<User>.AuthMInstance.CheckPhoneNoExists(input!);
-                
-                if ( isPhoneNoExist==true|| phoneVerify==false)
+                if(AuthManager<Admin>.AuthMInstance.ValidateAdmin(phoneNumber)==false)
                 {
                     Console.WriteLine(Message.printInvalidPhoneDetails);
                     continue;
                 }
-                VerifyVaccineCenterOption: Console.WriteLine(Message.inputVaccinationCenter);
-                vaccineCenterInput = Console.ReadLine();
-                bool isPresent = AuthManager<User>.AuthMInstance.VaccineCenterAlreadyPresent(vaccineCenterInput);
-                if(isPresent==true) { Console.WriteLine(Message.printVaccineCenterPresentAlready); 
-                    goto VerifyVaccineCenterOption; }
                 break;
             }
-
-            RegisterUI.UserRegister
-                (Role.Admin.ToString(),input,vaccineCenterInput);
-            helper(globalAdminObj);
+           
+            RegisterUI.UserRegister(Role.Admin.ToString(), phoneNumber);
+            
+            Helper(globalAdminObj);
         }
-        public   void viewAdmins()
+        
+       
+         void ViewAdmins()
         {
-            var vaccineCenterDetails=AuthManager<User>.AuthMInstance.ViewAdmins();
-            var input=vaccineCenterDetails.Distinct().ToList();
-            if(input==null)
-            {
-                Choose.GlobalAdminUIChoose();
-            }
+            List<VaccineCenter> vaccineCenterList=localAdminControllerObj.ViewAdmins();
+      
            Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write("LAdmins     VaccineCenter\n");
-            Console.ResetColor();
-            foreach(var VaccineCenter in input)
+            foreach(var VaccineCenter in vaccineCenterList)
             {
-                Console.WriteLine(VaccineCenter.LaName+ "     :     "+VaccineCenter.VcName);
+                Console.WriteLine(VaccineCenter.LaName);
+                Console.WriteLine(VaccineCenter.VcName+"\n");
             }
         }
         
-        public  void helper(GlobalAdmin globalAdminObj)
+        void Helper(GlobalAdmin globalAdminObj)
         {
-
-            HelperOption:  Console.ForegroundColor = ConsoleColor.Blue;
-            Choose.HelperChoose();
-            Helper input = (Helper)Validation.IntValidate();
-                Console.ResetColor();
-                if (input == Helper.Choose) 
-                choose(globalAdminObj);
-                else if(input==Helper.Exit)
-                    Environment.Exit(0);
-                else
+            while (true)
             {
-                ExceptionController.NotValid();
-                goto HelperOption;
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Choose.HelperChoose();
+                Helper input = (Helper)Validation.IntValidate();
+                Console.ResetColor();
+                
+                if (input.Equals(Project.Helper.Choose))
+                    choose(globalAdminObj);
+                
+                else if (input.Equals(Project.Helper.Exit))
+                    Environment.Exit(0);
+                
+                else
+                {
+                    Errors.NotValid();
+                    continue;
+                }
+                break;
             }
-
-           
         }
     }
 }

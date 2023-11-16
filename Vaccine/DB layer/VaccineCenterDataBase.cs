@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Project
 {
-    public class VaccineCenterDataBase : DataBase<VaccineCenter>
+    public class VaccineCenterDataBase : DataBase<VaccineCenter>, IVaccineCenterDataBase
     {
         private static VaccineCenterDataBase _vaccineCenterInstance;
         public List<VaccineCenter> VaccineCenterList;
@@ -17,9 +17,10 @@ namespace Project
                 var file = File.ReadAllText(_vaccinationCenterPath);
                 VaccineCenterList = JsonConvert.DeserializeObject<List<VaccineCenter>>(file);
             }
-            catch
+            catch(Exception ex)
             {
-                ExceptionController.DbException();
+                Errors.DbException();
+                ExceptionController.LogException(ex, "Error occured while reading DB");
             }
         }
         public static VaccineCenterDataBase VaccineCenterInstance
@@ -35,24 +36,20 @@ namespace Project
         }
         public bool addVaccineInCenter(List<VaccineCenter> CenterList)
         {
- 
 
-                    
-                    UpdateItem(_vaccinationCenterPath, CenterList);
-                    return true;
 
-                
-            
-            return false;
+
+            return UpdateItem(_vaccinationCenterPath, CenterList);
+
         }
-        public void AddVaccinationCentertoDB(VaccineCenter vaccineCenterObject)
+        public bool AddVaccinationCentertoDB(VaccineCenter vaccineCenterObject)
         {
-            AddItem(vaccineCenterObject, VaccineCenterList, _vaccinationCenterPath);
+            return AddItem(vaccineCenterObject, VaccineCenterList, _vaccinationCenterPath);
         }
         public bool updateVaccine(List<VaccineCenter> CenterList)
         {
-        return UpdateItem(_vaccinationCenterPath, CenterList);
-         }
-               
+            return UpdateItem(_vaccinationCenterPath, CenterList);
+        }
+
     }
-    }
+}

@@ -1,10 +1,10 @@
 ﻿
 using Newtonsoft.Json;
-using Vaccine.Model;
+
 
 namespace Project
 {
-    public class UserDataBase:DataBase<User>
+    public class UserDataBase : DataBase<User>, IUserDataBase
     {
 
         private static UserDataBase _userInstance;
@@ -21,20 +21,21 @@ namespace Project
                 return _userInstance;
             }
         }
-       
-        private UserDataBase() 
+
+        private UserDataBase()
         {
             UsersList = new List<User>();
-              _userPath = @"C:\Users\rnarang\OneDrive - WatchGuard Technologies Inc\Desktop\vjson.json";
+            _userPath = @"C:\Users\rnarang\OneDrive - WatchGuard Technologies Inc\Desktop\vjson.json";
             try
             {
                 var allUsers = File.ReadAllText(_userPath);
                 if (!String.IsNullOrEmpty(allUsers))
                     UsersList = JsonConvert.DeserializeObject<List<User>>(allUsers);
             }
-            catch 
+            catch(Exception ex)
             {
-                ExceptionController.DbException();
+                Errors.DbException();
+                ExceptionController.LogException(ex, "Error occured while reading DB");
             }
         }
         public void AddUser(User newUser)

@@ -1,25 +1,23 @@
 ﻿
-using Vaccine.Model;
 namespace Project
 {
-    public class AppointmentController {
-        List<Appointment> appointmentsList = ConnectToDataBase.DataBaseInstance.readAppointmentList();
+   
+    public class AppointmentController :IAppointmentControllerForPatient,IAppointmentControllerForAdmin{
+      //  List<Appointment> appointmentsList = ConnectToDataBase.DataBaseInstance.readAppointmentList();
         public bool BookAppointment(Appointment appointmentObject)
         {
-            bool isBooked = false;
-                    isBooked=AppointmentDataBase.AppointmentInstance.AddAppointment(appointmentObject);
-            if(isBooked==true)
-            {
-
-            }
-            return isBooked ;
+            if (appointmentObject.Date < DateTime.Now.Date)
+                return false;
+            bool isBooked=AppointmentDataBase.AppointmentInstance.AddAppointment(appointmentObject);
+            return isBooked;
         }
         public  bool CancelAppointment(Appointment appointmentObject)
         {
            bool isCancelled = false;
-            foreach (var appointment in appointmentsList)
+           
+            foreach (var appointment in AppointmentDataBase.AppointmentInstance.AppointmentList)
             {
-                if (appointment.patientPhoneNo == appointmentObject.patientPhoneNo && appointment.dt==appointmentObject.dt)
+                if (appointment.PatientPhoneNo.Equals(appointmentObject.PatientPhoneNo) && appointment.Date==appointmentObject.Date)
                 {
                     
                    isCancelled=AppointmentDataBase.AppointmentInstance.DeleteItem(appointment);
@@ -32,14 +30,14 @@ namespace Project
         public List<Appointment> ViewAppointment(User user, string vaccineCenter="")
         {
             
-            if (user.role==Role.Patient)
+            if (user.RoleOfUser.Equals(Role.Patient))
             {
-                List<Appointment> patientAppointments = appointmentsList.FindAll(a => a.patientPhoneNo == user.phoneNo);
+                List<Appointment> patientAppointments = AppointmentDataBase.AppointmentInstance.AppointmentList.FindAll(a => a.PatientPhoneNo.Equals(user.PhoneNo));
                 return patientAppointments;
             }
-            else if (user.role == Role.Admin)
+            else if (user.RoleOfUser.Equals(Role.Admin))
             {
-                    List<Appointment> adminAppointments = appointmentsList.FindAll(a => a.VcName==vaccineCenter);
+                    List<Appointment> adminAppointments = AppointmentDataBase.AppointmentInstance.AppointmentList.FindAll(a => a.VcName.Equals(vaccineCenter));
                     return adminAppointments;
                 
             }

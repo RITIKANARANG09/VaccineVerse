@@ -1,0 +1,38 @@
+[
+    {
+        "role": 2,
+        "phoneNo": "+919000000000",
+        "Username": "Aarohi",
+        "Password": "aarohi"
+    },
+    {
+        "role": 2,
+        "phoneNo": "+917777777777",
+        "Username": "Ambar",
+        "Password": "ambar"
+    },
+    {
+        "role": 2,
+        "phoneNo": "+917222222222",
+        "Username": "Ambar",
+        "Password": "ambar"
+    },
+    {
+        "role": 2,
+        "phoneNo": "+919999999999",
+        "Username": "Bob",
+        "Password": "bob"
+    },
+    {
+        "role": 2,
+        "phoneNo": "+918111111111",
+        "Username": "Liza",
+        "Password": "liza"
+    },
+    {
+        "role": 2,
+        "phoneNo": "+918666666666",
+        "Username": "James",
+        "Password": "james"
+    }
+]

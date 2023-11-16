@@ -1,6 +1,4 @@
 ﻿
-using Vaccine.Model;
-
 namespace Project
 {
 
@@ -8,15 +6,16 @@ namespace Project
     {
     
         
-        public static void Main(String[]args)
+        public static void Main()
         {
             try
             {
                 MainFunction();
             }
-            catch
+            catch(Exception ex)
             {
-                ExceptionController.SomethingWentWrong();
+                Errors.SomethingWentWrong();
+                ExceptionController.LogException(ex, "An unknown error occured");
             }
         }
         public static void MainFunction()
@@ -34,28 +33,28 @@ namespace Project
                     case StartFunction.Login:
 
                         User user = LoginUI.UserLogin();
-                        if (user.role == Role.Admin)
+                        if (user.RoleOfUser.Equals(Role.Admin))
                         {
                             Console.WriteLine("\n---------------------------- Admin --------------------------------");
-                            LocalAdminUI adminObj = new LocalAdminUI();
-                            Admin admin = new Admin() { Username = user.Username, Password = user.Password, phoneNo = user.phoneNo, role = user.role };
+                            var adminObj = new LocalAdminUI();
+                            var admin = new Admin() { Username = user.Username, Password = user.Password, PhoneNo = user.PhoneNo, RoleOfUser = user.RoleOfUser };
                             adminObj.AdminLogin(admin);
                             continue;
                         }
-                        else if ( user.role== Role.GlobalAdmin)
+                        else if ( user.RoleOfUser.Equals(Role.GlobalAdmin))
                         {
-                            GlobalAdminUI globalAdminObj = new GlobalAdminUI();
-                            GlobalAdmin globalAdmin = new GlobalAdmin() { Username=user.Username, 
-                            Password=user.Password,phoneNo=user.phoneNo,role=user.role};
+                            var globalAdminObj = new GlobalAdminUI();
+                            var globalAdmin = new GlobalAdmin() { Username=user.Username, 
+                            Password=user.Password,PhoneNo=user.PhoneNo,RoleOfUser=user.RoleOfUser};
                             Console.WriteLine("\n--------------------- Global Admin ------------------------------");
                             globalAdminObj.choose(globalAdmin);
                         }
-                         else if (user.role == Role.Patient)
+                         else if (user.RoleOfUser.Equals(Role.Patient))
                         {
-                        PatientUI patientObj = new PatientUI();
-                            Patient patient = new Patient() { Username=user.Username,Password=user.Password,phoneNo=user.phoneNo,role=user.role};
+                        var patientObj = new PatientUI();
+                            var patient = new Patient() { Username=user.Username,Password=user.Password,PhoneNo=user.PhoneNo,RoleOfUser=user.RoleOfUser};
                             Console.WriteLine("\n---------------------------- Patient --------------------------------");
-                            patientObj.choose(patient);
+                            patientObj.PatientUIChoose(patient);
                         }
                         else
                         {
@@ -69,7 +68,7 @@ namespace Project
                         continue ;
 
                     case StartFunction.ViewVaccines:
-                        GlobalAdminUI globalAdminUI = new GlobalAdminUI();
+                        var globalAdminUI = new GlobalAdminUI();
                         globalAdminUI.GloballyViewVaccine();
                         continue;
                    
@@ -89,7 +88,7 @@ namespace Project
             while (true)
             {
                 string phoneNoCheck = VerifyPhone();
-                if (AuthManager<User>.AuthMInstance.CheckPhoneNoExists(phoneNoCheck))
+                if (AuthManager<User>.AuthMInstance.FindPhoneNumber(phoneNoCheck))
                 { Console.WriteLine(Message.printPhoneNoExists);
                     continue; }
 
@@ -102,16 +101,16 @@ namespace Project
         }
         public static string VerifyPhone()
         {
-            var pn = "";
+            string phoneNumber;
             while (true)
             {
                 Console.WriteLine(Message.printPhoneNoFormat);
-                pn = Console.ReadLine();
-                var ans = false;
-                if (RegexValid.PhoneNoVerify(pn) == false) continue;
+                phoneNumber = Console.ReadLine();
+               
+                if (RegexValid.PhoneNoVerify(phoneNumber) == false) continue;
                 break;
             }
-            return pn;
+            return phoneNumber;
         }
 
 
@@ -128,16 +127,16 @@ namespace Project
                     case PatientChooseHelper.Login:
                        // goto Label;
                         User user = LoginUI.UserLogin();
-                        if (string.IsNullOrWhiteSpace(user.role.ToString()) || user.role.ToString() != "Patient")
+                        if (string.IsNullOrWhiteSpace(user.RoleOfUser.ToString()) || user.RoleOfUser.ToString() != "Patient")
                         {
                             Console.WriteLine(Message.printInvalidChoice);
                             continue;
                         }
 
-                        PatientUI patientObj = new PatientUI();
-                        Patient patient = new Patient() { Username = user.Username, Password = user.Password, phoneNo = user.phoneNo, role = user.role };
+                        var patientObj = new PatientUI();
+                        var patient = new Patient() { Username = user.Username, Password = user.Password, PhoneNo = user.PhoneNo, RoleOfUser = user.RoleOfUser };
                         Console.WriteLine("---------------------------- Patient --------------------------------");
-                        patientObj.choose(patient);
+                        patientObj.PatientUIChoose(patient);
                         break;
 
                     case PatientChooseHelper.Exit:

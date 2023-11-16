@@ -3,26 +3,13 @@ namespace Project
 {
     public class ExceptionController
     {
-        public static void DbException()
+       
+        public static void LogException(Exception ex,string error)
         {
-            Console.WriteLine("An unexpected error occurred!!");
+            string path = @"C:\Users\rnarang\OneDrive - WatchGuard Technologies Inc\Desktop\ExceptionHandler.txt";
+            var time = DateTime.Now.ToString();
+            string text = "EXCEPTION::   " + ex.ToString() + "\n\nERROR::   " + error + "\n" + time + "\n\n";
+            File.AppendAllText(path, text);
         }
-        public static void OnlyNumeric()
-        {
-            Console.WriteLine("Only numerical values are allowed");
-        }
-        public static void SomethingWentWrong()
-        {
-            Console.WriteLine("Something went wrong");
-        }
-        public static void NotValid()
-        {
-            Console.WriteLine("Enter a valid input !");
-        }
-        public static void Message(string message)
-        {
-            Console.WriteLine(message);
-        }
-
     }
 }

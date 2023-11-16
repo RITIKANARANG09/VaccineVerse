@@ -1,15 +1,14 @@
 ﻿
-using Vaccine.Model;
 
 namespace Project
 {
     
     public class PatientUI : User {
-        VaccineController vaccineControllerObj = new VaccineController();
-        PatientController patientControllerObj = new PatientController();
-        AppointmentController appointmentControllerObj = new AppointmentController();
+        IVaccineControllerForPatient vaccineControllerObj = new VaccineController();
+     
+        IAppointmentControllerForPatient appointmentControllerObj = new AppointmentController();
         AppointmentUI appointmentObj = new AppointmentUI();
-        public void choose(Patient patientObj)
+        public void PatientUIChoose(Patient patientObj)
         {
             
             while (true)
@@ -21,8 +20,8 @@ namespace Project
                 Console.ResetColor();
                 switch (input)
                 {
-                    case PatientChoose.ViewVaccines:
-                        chooseVC(patientObj);
+                    case PatientChoose.SelectVaccines:
+                        SelectVaccine(patientObj);
                         continue;
 
                     case PatientChoose.ViewPastRecords:
@@ -32,7 +31,7 @@ namespace Project
 
                     case PatientChoose.ViewAppointments:
                         
-                        appointmentObj.viewAppointments(patientObj);
+                        appointmentObj.ViewAppointments(patientObj);
                         continue;
 
                     case PatientChoose.CancelAppointment:
@@ -52,29 +51,29 @@ namespace Project
             
         }
 
-        public void chooseVC(Patient patientObj)
+        public void SelectVaccine(Patient patientObj)
         {
-            var vaccineAges=ViewAgeWiseVaccines(patientObj);
-            VaccineIsAvailable(vaccineAges,patientObj);
+            var VaccineList=ViewAgeWiseVaccines(patientObj);
+            VaccineIsAvailable(VaccineList, patientObj);
         }
-        public List<string> ViewAgeWiseVaccines(Patient patientObj)
+        public List<Vaccine> ViewAgeWiseVaccines(Patient patientObj)
         {
             Console.Write(Message.inputAge);
             int age = Validation.IntValidate();
 
             Console.Write(Message.printAvailableVaccine);
-            List<string> vaccineAges = ViewVaccineAgeWise(age);
+            List<Vaccine> VaccineList = ViewVaccineAgeWise(age);
 
             Console.ForegroundColor = ConsoleColor.Blue;
             Helper(patientObj);
-            return vaccineAges;        
+            return VaccineList;        
         }
            
         public void PastRecordOfPatient(Patient patientObj)
 
         {
             List<Appointment> pastRecords = appointmentControllerObj.ViewAppointment(patientObj);
-            var recordList= pastRecords.FindAll(pastRecord => pastRecord.dt < DateTime.Now.Date);
+            var recordList= pastRecords.FindAll(pastRecord => pastRecord.Date < DateTime.Now.Date);
             if (recordList.Count == 0)
             {
                 Console.WriteLine(Message.printNoPastRecords);
@@ -82,66 +81,78 @@ namespace Project
             }
             foreach (var record in recordList)
                 {
-                Console.WriteLine("Vaccine : " +record.VName + " on date : "+record.dt);
+                Console.WriteLine("Vaccine : " +record.VName + " on date : "+record.Date);
+                Console.WriteLine(",at " + record.VcName + ", " + record.Address);
             }
         }
-        public List<string> ViewVaccineAgeWise(int age)
+        public List<Vaccine> ViewVaccineAgeWise(int age)
         {
-            List<string> vaccineList = vaccineControllerObj.ViewVaccineByAge(age);
-            if (vaccineList.Count == 0)
+            List<Vaccine> VaccineList = vaccineControllerObj.ViewVaccineByAge(age);
+            if (VaccineList.Count == 0)
 
             {
                 Console.WriteLine(Message.printUnavailableVaccine);
                 return null;
             }
-                foreach(var vaccine in vaccineList) { Console.WriteLine(vaccine); }
-            return vaccineList;
+                foreach(var vaccine in VaccineList) { Console.WriteLine(vaccine.VName); }
+            return VaccineList;
         }
 
         public void Helper(Patient patientObj)
         {
             Choose.VaccineSelectChoose();
-        ChooseVaccineOption: VaccineSelect input = (VaccineSelect)Validation.IntValidate();
-
-            if (input == VaccineSelect.Exit)
-            { Environment.Exit(0); }
-
-            else if (input == VaccineSelect.Back)
-                choose(patientObj);
-            else if (input == VaccineSelect.SelectVaccine)
+            while (true)
             {
-                return;
+                VaccineSelect input = (VaccineSelect)Validation.IntValidate();
+
+                if (input.Equals(VaccineSelect.Exit))
+                {
+                    Environment.Exit(0);
+                }
+
+                else if (input.Equals(VaccineSelect.Back))
+                    PatientUIChoose(patientObj);
+
+                else if (input.Equals(VaccineSelect.SelectVaccine))
+                {
+                    return;
+                }
+                else continue;
             }
-            else goto ChooseVaccineOption;
+            
         }
-        public void VaccineIsAvailable(List<string> vaccineAges,Patient patientObj) {
+        public void VaccineIsAvailable(List<Vaccine> vaccineAges,Patient patientObj) {
             while (true)
             {
 
                 Console.Write(Message.inputVaccineName);
                 var vaccineName = Console.ReadLine();
-                if (!vaccineAges.Contains(vaccineName))
+                
+                if (!vaccineAges.Any(v => v.VName.ToLower().Equals(vaccineName.ToLower())))
                 {
                     Console.WriteLine(Message.printVaccineAboveAge);
                     continue;
                 }
-                var type = vaccineControllerObj.FindParticularVaccineCenterWise(vaccineName);
-                if (type.Count == 0)
+                List<VaccineCenter> vaccineCenterList = vaccineControllerObj.ViewCenterByVaccine(vaccineName);
+                if (vaccineCenterList.Count == 0)
                 {
                     Console.WriteLine(Message.printUnavailableVaccine); continue;
                 }
                 Console.WriteLine(Message.printAvailableVaccineCenterWise);
-                string types = string.Join(", ", type);
-                Console.WriteLine(types);
-                ChooseVaccineCenter(type, patientObj, vaccineName);
+               foreach(var vaccineCenter in vaccineCenterList)
+                Console.WriteLine(vaccineCenter.VcName + " : " + vaccineCenter.Address);
+                ChooseVaccineCenter(vaccineCenterList, patientObj, vaccineName);
                 break;
             }
         }
-        public  void ChooseVaccineCenter(List<string> type,Patient patientObj,string vaccineN)
+        public  void ChooseVaccineCenter(List<VaccineCenter> VaccineCenterList,Patient patientObj,string vaccineN)
             { while(true)
             { Console.Write(Message.printChooseVC);
                     var centerName = Console.ReadLine();
-                    if (!type.Contains(centerName))
+                Console.Write(Message.printChooseVCAddress);
+                var centerAddress = Console.ReadLine();
+                var vaccineCenterFind = VaccineCenterList.Find(v => v.VcName.ToLower().Equals(centerName.ToLower()) && v.Address.ToLower().Equals(centerAddress.ToLower()));
+                if (vaccineCenterFind==null)
                     {
                         Console.WriteLine(Message.printInvalidChoice);
                         continue;
@@ -149,9 +160,9 @@ namespace Project
                     else
                     {
                         Console.WriteLine(Message.inputBookAppointment);
-                        AppointmentUI appointmentUI = new AppointmentUI();
-                        Appointment appointment = new Appointment(patientObj.phoneNo, vaccineN, DateTime.Now, centerName);
-                        appointmentUI.bookAppointment(appointment);
+                        var appointmentUI = new AppointmentUI();
+                        var appointment = new Appointment(patientObj.PhoneNo, vaccineN, DateTime.Now, centerName,centerAddress);
+                        appointmentUI.BookAppointment(appointment);
                     
                     }
                     break;

@@ -2,7 +2,11 @@
 
 namespace Project
 {
-    internal class LocalAdminController
+    public class LocalAdminController
     {
+        public List<VaccineCenter> ViewAdmins()
+        {
+            return VaccineCenterDataBase.VaccineCenterInstance.VaccineCenterList;
+        }
     }
 }

@@ -1,78 +1,103 @@
 ﻿
+using Project;
+
 namespace Project
 {
-    public class VaccineController
+
+    public class VaccineController : IVaccineControllerForAdmin, IVaccineControllerForGlobalAdmin, IVaccineControllerForPatient
     {
-        public List<VaccineCenter> VaccineCentersList = ConnectToDataBase.DataBaseInstance.readVaccineCenterList();
-        public List<Vaccine> VaccinesList = ConnectToDataBase.DataBaseInstance.readVaccineList();
+        //public List<VaccineCenter> VaccineCentersList = ConnectToDataBase.DataBaseInstance.readVaccineCenterList();
+        //public List<Vaccine> VaccinesList = ConnectToDataBase.DataBaseInstance.readVaccineList();
+        //IVaccineDataBase vaccineDataBase = VaccineDataBase.VaccineInstance;
         public List<Vaccine> ViewVaccinesGlobally()
         {
-            
-            List<Vaccine> vaccineList= new List<Vaccine>();
-            foreach(var vaccine in VaccinesList)
+
+            var vaccineList = new List<Vaccine>();
+            foreach (var vaccine in VaccineDataBase.VaccineInstance.vaccineList)
             {
-                if(!vaccineList.Contains(vaccine))
+                if (!vaccineList.Contains(vaccine))
                     vaccineList.Add(vaccine);
             }
-           
+
             return vaccineList;
         }
-        public  List<string> FindParticularVaccineCenterWise(string vaccine)
+
+        public bool AddVaccineGlobally(Vaccine vaccine)
         {
-            List<string> list = new List<string>();
-           
-            foreach (VaccineCenter vaccineCenter in VaccineCentersList)
+
+
+            return VaccineDataBase.VaccineInstance.GloballyAddVaccine(vaccine);
+
+        }
+        /* public bool IncreaseVaccineCount(Vaccine vaccineObj,VaccineCenter vaccineCenter, int doses)
+         {
+             Dictionary<Vaccine, int> v = vaccineCenter.vaccines;
+             if(v.ContainsKey(vaccineObj))
+             {
+                 v[vaccineObj] += doses;
+             }
+             return VaccineCenterDataBase.VaccineCenterInstance.updateVaccine(VaccineCenterDataBase.VaccineCenterInstance.VaccineCenterList);
+         }
+         public bool DecreaseVaccineCount(Vaccine vaccineObj, VaccineCenter vaccineCenter, int doses)
+         {
+             Dictionary<Vaccine, int> v = vaccineCenter.vaccines;
+             if (v.ContainsKey(vaccineObj))
+             {
+                 v[vaccineObj] -= doses;
+             }
+             return VaccineCenterDataBase.VaccineCenterInstance.updateVaccine(VaccineCenterDataBase.VaccineCenterInstance.VaccineCenterList);*/
+        //}
+        public bool UpdateVaccine(Vaccine vaccineObj, string updateCheck, int vaccineCount)
+        {
+           /* var vaccineObj=vaccineCenterObj.vaccines.Find(vaccine=>vaccine.VName.Equals(vaccineName));
+            if (vaccineObj == null) */
+            if (updateCheck.Equals("increase"))
+                vaccineObj.VCount += vaccineCount;
+            else if (updateCheck.Equals("decrease"))
+                vaccineObj.VCount -= vaccineCount;
+            return VaccineCenterDataBase.VaccineCenterInstance.updateVaccine(VaccineCenterDataBase.VaccineCenterInstance.VaccineCenterList);
+        }
+
+        public List<Vaccine> ViewVaccinesCenterWise(VaccineCenter vaccineCenterObject)
+        {
+            var vaccines = new List<Vaccine>();
+            foreach (var v in vaccineCenterObject.vaccines)
+                vaccines.Add(v);
+            return vaccines;
+        }
+        public List<VaccineCenter> ViewCenterByVaccine(string vaccine)
+        {
+            var centerList = new List<VaccineCenter>();
+
+            foreach (VaccineCenter vaccineCenter in VaccineCenterDataBase.VaccineCenterInstance.VaccineCenterList)
             {
                 var vaccinesList = vaccineCenter.vaccines;
                 foreach (var vaccines in vaccinesList)
                 {
-                    if (vaccines.vcount > 0 && vaccines.vname == vaccine)
-                        list.Add(vaccineCenter.VcName);
+                    if (vaccines.VCount > 0 && vaccines.VName.Equals(vaccine))
+                        centerList.Add(vaccineCenter);
                 }
             }
-            return list;
+            return centerList;
         }
-        public bool AddVaccineGlobally(Vaccine vaccine)
+        public List<Vaccine> ViewVaccineByAge(int age)
         {
-           
-            
-            return VaccineDataBase.VaccineInstance.GloballyAddVaccine(vaccine);
-            
-        }
-        public bool UpdateVaccine(Vaccine vaccineObj,string updateCheck,int vaccineCount)
-        {
-            if (updateCheck == "increase")
-                vaccineObj.vcount += vaccineCount;
-            else if(updateCheck=="decrease")
-                vaccineObj.vcount -= vaccineCount;
-            return VaccineCenterDataBase.VaccineCenterInstance.updateVaccine(VaccineCentersList);
-        }
-       
-        public  List<Vaccine> ViewVaccinesLocally(VaccineCenter vaccineCenterObject)
-        {
-                    return vaccineCenterObject.vaccines;
-        }
-        public  List<string> ViewVaccineByAge(int age)
-        {
-           
-            List<string> list = new List<string>();
-            foreach (var vaccineCenter in VaccineCentersList)
+
+            var vaccineList = new List<Vaccine>();
+            foreach (var vaccine in VaccineDataBase.VaccineInstance.vaccineList)
             {
-                var vaccinesList = vaccineCenter.vaccines;
-                foreach (var vaccine in vaccinesList)
-                {
-                    if (vaccine.minAge <= age && vaccine.maxAge >= age && !list.Contains(vaccine.vname))
-                        list.Add(vaccine.vname);
-                }
+
+                if (vaccine.MinAge <= age && vaccine.MaxAge >= age && !vaccineList.Contains(vaccine))
+                    vaccineList.Add(vaccine);
             }
-            return list;
+            return vaccineList;
         }
-        public bool VaccineAddInCenter(VaccineCenter vaccineCenter, Vaccine vaccineObj,int doses)
+
+        public bool VaccineAddInCenter(VaccineCenter vaccineCenter)
 
         {
-            vaccineObj.vcount = doses;
-            vaccineCenter.vaccines.Add(vaccineObj);
-            var input = VaccineCenterDataBase.VaccineCenterInstance.addVaccineInCenter(VaccineCentersList);
+
+            var input = VaccineCenterDataBase.VaccineCenterInstance.addVaccineInCenter(VaccineCenterDataBase.VaccineCenterInstance.VaccineCenterList);
             return input;
         }
 

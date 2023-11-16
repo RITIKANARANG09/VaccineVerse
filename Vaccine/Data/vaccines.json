@@ -1,1 +1,62 @@
-[{"vname":"Hepatitis A","vcount":0,"minAge":50,"maxAge":70},{"vname":"Hepatitis B","vcount":0,"minAge":10,"maxAge":30},{"vname":"Covid Shield","vcount":0,"minAge":1,"maxAge":10},{"vname":"Typhoid Vaccine","vcount":0,"minAge":10,"maxAge":15},{"vname":"Influenza Vaccine","vcount":0,"minAge":40,"maxAge":80},{"vname":"Dengue Vaccine","vcount":0,"minAge":1,"maxAge":3},{"vname":"CoWIN","vcount":0,"minAge":10,"maxAge":20},{"vname":"Rabies Vaccine","vcount":0,"minAge":1,"maxAge":6},{"vname":"Hepatitis E","vcount":0,"minAge":1,"maxAge":70},{"vname":"Hepatitis C","vcount":10000,"minAge":34,"maxAge":44}]
+[
+  {
+    "vname": "Hepatitis A",
+    "vcount": 0,
+    "minAge": 50,
+    "maxAge": 70
+  },
+  {
+    "vname": "Hepatitis B",
+    "vcount": 0,
+    "minAge": 10,
+    "maxAge": 30
+  },
+  {
+    "vname": "Covid Shield",
+    "vcount": 0,
+    "minAge": 1,
+    "maxAge": 10
+  },
+  {
+    "vname": "Typhoid Vaccine",
+    "vcount": 0,
+    "minAge": 10,
+    "maxAge": 15
+  },
+  {
+    "vname": "Influenza Vaccine",
+    "vcount": 0,
+    "minAge": 40,
+    "maxAge": 80
+  },
+  {
+    "vname": "Dengue Vaccine",
+    "vcount": 0,
+    "minAge": 1,
+    "maxAge": 3
+  },
+  {
+    "vname": "CoWIN",
+    "vcount": 0,
+    "minAge": 10,
+    "maxAge": 20
+  },
+  {
+    "vname": "Rabies Vaccine",
+    "vcount": 0,
+    "minAge": 1,
+    "maxAge": 6
+  },
+  {
+    "vname": "Hepatitis E",
+    "vcount": 0,
+    "minAge": 1,
+    "maxAge": 70
+  },
+  {
+    "vname": "Hepatitis C",
+    "vcount": 10000,
+    "minAge": 34,
+    "maxAge": 44
+  }
+]

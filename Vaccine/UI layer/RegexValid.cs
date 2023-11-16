@@ -16,7 +16,7 @@ namespace Project
             {
                 return true;
             }
-            ExceptionController.Message(Message.printInvalidChoice);
+            Errors.Message(Message.printInvalidChoice);
             return false;
         }
     }
